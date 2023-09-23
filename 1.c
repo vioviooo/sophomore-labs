@@ -8,6 +8,12 @@ typedef long long ll;
 
 long long MAX_LL = LLONG_MAX;
 
+// enum statusCodes {
+//     sc_ok, 
+//     sc_overflow,
+//     sc_inv_arg
+// };
+
 ll charToInteger(char* ch) {
     ll num = atoll(ch);
     return num;
@@ -25,12 +31,9 @@ ll factorial(ll n) {
 }
 
 ll sumOfNums(ll n) {
-    ll sum = 0;
-    for (ll i = 1; i <= n; i++) {
-        sum += i;
-        if (sum > MAX_LL) {
-            return -1;
-        }
+    ll sum = n * (n + 1) / 2;
+    if (sum > MAX_LL) {
+        return -1;
     }
     return sum;
 }
@@ -88,7 +91,7 @@ int main(int argc, char* argv[]) {
     }
 
     for (int i = 0; argv[1][i] != '\0'; i++) {
-        if (i > 19 && ind != 2) {
+        if (i > 19 && ind != 2) { // не более 19 знаков у самого большого числа
             printf("Integer overflow! \n");
             return 1;
         } 
@@ -108,10 +111,8 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
 
-            for (ll i = 1; i <= 100; i++) {
-                if (i % num == 0) {
-                    printf("%lld ", i);
-                }
+            for (int i = num; i <= 100; i += num) {
+                printf("%d ", i);
             }
 
             break;
@@ -154,23 +155,49 @@ int main(int argc, char* argv[]) {
         }
 
         case 3: { 
-            ll num = charToInteger(argv[1]);
 
-            if (num > 10 || num < 0) {
-                printf("Entered number is out of range! \n");
-                return 1;
+            int num = atoi(argv[1]);
+
+            printf("+----+");
+
+            for (int i = 1; i <= 140; i++) {
+                if (i % 14 == 0) {
+                    printf("+");
+                }
+                else {
+                    printf("-");
+                }
             }
-            for (ll i = 1; i <= 10; i++) {
-                ll res = i; // result for each base for each power
-                printf("%lld ", res);
-                for (ll j = 1; j <= num; j++) {
-                    res *= i;
-                    printf("%lld ", res);
+            printf("\n");
+
+            for (int i = 1; i <= 10; i++) {
+                ll res = i; // Initialize 'res' to 1 for the base
+                printf("|%3d |", i);
+                printf(" %11lld |", res);
+                for (int j = 1; j < num && i > 0; j++) {
+                    if (i != 1) {
+                        res *= i; 
+                    }
+                    printf(" %11lld |", res);
+                }
+
+                printf("\n");
+
+                printf("+----+");
+
+                for (int j = 1; j <= 140; j++) {
+                    if (j % 14 == 0) {
+                        printf("+");
+                    }
+                    else {
+                        printf("-");
+                    }
                 }
                 printf("\n");
             }
             break;
         }
+
         case 4: {
             ll num = charToInteger(argv[1]);
 
