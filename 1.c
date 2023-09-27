@@ -4,38 +4,33 @@
 #include <stdbool.h>
 #include <limits.h>
 
-typedef long long ll;
+typedef long long ll; 
 
 long long MAX_LL = LLONG_MAX;
 
-// enum statusCodes {
-//     sc_ok, 
-//     sc_overflow,
-//     sc_inv_arg
-// };
-
-ll charToInteger(char* ch) {
-    ll num = atoll(ch);
-    return num;
-}
-
 ll factorial(ll n) {
+    if (n < 0) {
+        return -1;
+    }
     ll res = 1;
     for (ll i = 2; i <= n; i++) {
-        res *= i;
-        if (res > MAX_LL) {
-            return -1;
+        if (i > MAX_LL / res) {
+            return -2;
         }
+        res *= i;
     }
     return res;
 }
 
 ll sumOfNums(ll n) {
-    ll sum = n * (n + 1) / 2;
-    if (sum > MAX_LL) {
+    if (n <= 0) {
         return -1;
     }
-    return sum;
+    ll factor = (n + 1) / 2;
+    if (factor > MAX_LL / n) {
+        return -2;
+    }
+    return (ll)(factor * n);
 }
 
 ll lengthOfNum(ll n) {
@@ -48,13 +43,16 @@ ll lengthOfNum(ll n) {
     return len;
 }
 
-bool isPrime(ll n) {
-    for (ll i = 2; i * i < n; i++) {
+int isPrime(ll n) {
+    if (n <= 1) {
+        return -1;
+    }
+    for (ll i = 2; i * i <= n; i++) {
         if (n % i == 0) {
-            return false;
+            return 0;
         }
     }
-    return true;
+    return 1;
 }
 
 int main(int argc, char* argv[]) {
@@ -74,16 +72,12 @@ int main(int argc, char* argv[]) {
     ll numOfCommands = 6;
     char *commands[6] = {"h", "p", "s", "e", "a", "f"};
 
-    // printf("%c \n", argv[2][0]);
-
     ll ind = -1;
-    for (ll i = 0; i < numOfCommands; i++) {
+    for (ll i = 0; i < numOfCommands && strcmp(&argv[2][2], "\0") == 0; i++) {
         if ((argv[2][0] == '-' || argv[2][0] == '/') && strcmp(&argv[2][1], commands[i]) == 0) {
             ind = i; // keep the index of the command we need to execute
         }
     }
-
-    // printf("%c \n", argv[2][1]);
 
     if (ind == -1) {
         printf("Invalid command. Try again. \n");
@@ -99,7 +93,7 @@ int main(int argc, char* argv[]) {
 
     switch (ind) {
         case 0: {
-            ll num = charToInteger(argv[1]);
+            ll num = atoll(argv[1]);
 
             if (num == 0) {
                 printf("Can't divide by 0! \n");
@@ -118,16 +112,15 @@ int main(int argc, char* argv[]) {
             break;
         }
         case 1: {
-            ll num = charToInteger(argv[1]);
+            ll num = atoll(argv[1]);
 
-            if (num == 1 || num == 0 || num < 0) {
+            int check = isPrime(num);
+
+            if (check == -1) {
                 printf("Neither prime, nor composite. \n");
-                return 0;
             }
 
-            bool check = isPrime(num);
-
-            if (check) {
+            if (check == 1) {
                 printf("Prime.");
             }
             else {
@@ -150,12 +143,10 @@ int main(int argc, char* argv[]) {
                     printf("%c ", argv[1][i]);
                 }
             }
-
             break;
         }
 
         case 3: { 
-
             int num = atoi(argv[1]);
 
             printf("+----+");
@@ -199,16 +190,14 @@ int main(int argc, char* argv[]) {
         }
 
         case 4: {
-            ll num = charToInteger(argv[1]);
+            ll num = atoll(argv[1]), sum = sumOfNums(num);
 
-            if (num < 1) {
+            if (sum == -1) {
                 printf("The sum is undefined: entered number is less than 1. \n");
-                return 0;
+                return 1;
             }
 
-            ll sum = sumOfNums(num);
-
-            if (sum < 0) {
+            if (sum == -2) {
                 printf("Integer overflow! \n");
                 return 1;
             }
@@ -218,16 +207,14 @@ int main(int argc, char* argv[]) {
             break;
         }
         case 5: {
-            ll num = charToInteger(argv[1]);
+            ll num = atoll(argv[1]), fact = factorial(num);
 
-            if (num < 0) {
-                printf("The factorial of this integer is undefined. The number is less than 0. \n");
-                return 0;
+            if (fact == -1) {
+                printf("The factorial of a negative integer is undefined. \n");
+                return 1;
             }
 
-            ll fact = factorial(num);
-
-            if (fact < 0) {
+            if (fact == -2) {
                 printf("Integer overflow! \n");
                 return 1;
             }
