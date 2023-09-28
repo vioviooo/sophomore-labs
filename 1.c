@@ -6,9 +6,9 @@
 
 typedef long long ll; 
 
-long long MAX_LL = LLONG_MAX;
-
 ll factorial(ll n) {
+    long long MAX_LL = LLONG_MAX;
+
     if (n < 0) {
         return -1;
     }
@@ -27,7 +27,8 @@ ll sumOfNums(ll n) {
         return -1;
     }
     ll factor = (n + 1) / 2;
-    if (factor > MAX_LL / n) {
+    if (factor > MAX_LL / n) 
+    {
         return -2;
     }
     return (ll)(factor * n);
