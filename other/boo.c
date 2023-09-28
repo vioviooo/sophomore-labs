@@ -1,146 +1,101 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <math.h>
 #include <limits.h>
+#include <math.h>
 
 typedef long long ll;
-typedef long double ld;
 
-long long MAX_LL = LLONG_MAX;
-
-ll charToNum(char* ch) {
-    ll num = atoll(ch);
-    return num;
+double first(double x, double eps) 
+{
+    double res = exp(x);
+    return res;
 }
 
-int myAtoi(const char* ch) {
-    int sign = 1;
-    if (ch[0] == '-') {
-        sign *= -1;
-    }
-
-    int res = 0, d = 1;
-    for (int i = 0; ch[i] != '\0'; i++) {
-        if (ch[i] >= '0' && ch[i] <= '9') {
-            res = res + d * (ch[i] - '0');
-        }
-        d *= 10;
-    }
-
-    return sign * res;
+double second(double x, double eps) 
+{
+    double res = cos(x);
+    return res;
 }
 
-ld eSeries(ld eps) {
-    ld res = 2.0, diff = eps + 1.0;
-    ll fact = 1;
-    for (int n = 2; eps < diff; n++) {
-        fact *= n;
-        res += (1.0 / fact);
-        diff = 1.0 / fact;
+enum convergence_status_codes
+{
+    csc_okay, 
+    csc_error
+};
+
+enum convergence_status_codes third(double x, double eps) // converges only @ |x| <= 1
+{   
+    if (fabs(x) > 1.0) {
+
+    } 
+    double res = 1.0, elem = 1.0, diff = 1.0 + eps, last = 1.0, curr = 2.0, next = 3.0;
+    for (int n = 1; elem > eps; n++) 
+    {
+        elem *= 27 * x * x * n * n * n / (last * curr * next);
+        res += elem;
+        last += 3, curr += 3, next += 3;
     }
     return res;
 }
 
-bool isDigit(char ch) {
-    return (ch >= '0' && ch <= '9') ? true : false;
-}
-
-ld sciNotation(char* ch) {
-    int coef = 1, d = 10, i;
-    for (i = 0; ch[i] != 'e'; i++) {
-        if (i == 0 && isDigit(ch[i]) && ch[i] != '0') {
-            coef *= (ch[i] - '0');
-            printf("%d \n", coef);
-        }
-        else if (isDigit(ch[i])) {
-            coef = coef * d + (ch[i] - '0');
-            d *= 10;
-        }
-    }
-
-    if (ch[i + 1] != '-') {
-        return 2.0;
-    }
-
-    i += 2; // cause we stopped at e, then will be '-', and after the power
-
-    int power = 1;
-    if (isDigit(ch[i]) && ch[i] != '0') {
-        power *= (ch[i] - '0');
-    }
-
-    i += 1; 
-    d = 10;
-    for (; ch[i] != '\0'; i++) {
-        if (isDigit(ch[i])) {
-            power = power * d + (ch[i] - '0');
-            d *= 10;
-        }
-    }
-
-    printf("%d %d \n", coef, power);
-
-    ld eps = coef * pow(10, -power);
-
-    return eps;
-}
-
-ld getEpsilon(char* ch) { // нет проверки на корректность последовательной записи экспоненц эпсилона
-    for (int i = 0; ch[i] != '\0'; i++) {
-        if (ch[i] == 'e') {
-            ld eps = sciNotation(ch);
-            return eps;
-        }
-    }
-    ld eps = strtold(ch, NULL);
-    return eps;
-}
-
-double gammaSeries() {
-    double eps = 0.0000000000001;
-    double res = 0.5, diff = 1.0 + eps, prev, elem;
-    for (int k = 3; diff > eps; k++) {
-        prev = res;
-        elem = ((1.0 / pow(floor(sqrt(k)), 2)) - (1.0 / k));
-        res += elem;
-        if (elem < eps) {
-            prev = 0.0;
-        }
-        diff = fabs(res - prev);
-    }
-    return res - acos(-1) * acos(-1) / 6;
-}
-
-double boogammaSeries()
+double fourth(double x, double eps) // converges only @ |x| <= 1
 {
-    double preres = 0;
-    double n = 3;
-    double eps = 0.0000000000001;
-    // floor - отбрасывает дробную часть
-    double res = 0.5;
-    double elem = 0;
-    do
+    // if (fabs(x) > 1) {
+    //     return 
+    // }
+    double res = 0.0, elem = 1.0, odd = 1.0, even = 2.0;
+    for (int n = 1; fabs(elem) > eps; n++) 
     {
-        preres = res;
-        elem = ((1.0 / pow(floor(sqrt(n)), 2)) - (1.0 / n));
+        elem *= (-1) * x * x * odd / even;
         res += elem;
-        if (elem < eps) preres = 0;
-        n++;
-    } 
-    while (eps < fabs(res - preres));
-    return (res - (pow(acos(-1), 2) / 6));
+        even += 2.0, odd += 2.0;
+    }
+    return res;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) 
+{
 
-    // int nunu = myAtoi(argv[1]);
+    if (argc != 3) 
+    {
+        printf("Invalid amount of arguments. Usage: %s <integer> <epsilon> \n", argv[0]);
+        return 1;
+    }
 
-    // printf("%d", nunu);
+    double x = strtod(argv[1], NULL);
+    double eps = strtod(argv[2], NULL);
 
-    ld eps = getEpsilon(argv[1]);
+    printf("Choose the equation: a, b, c or d? \nOr, if you want to output all of them, press z.\n");
 
-    printf("%.*f", 10, gammaSeries());
+    char choice;
+    scanf("%c", &choice);
+
+    switch(choice) 
+    {
+        case 'a':
+            printf("%.8f\n", first(x, eps));
+            // printf("i work like a dog 7 days a week\n");
+            break;
+        case 'b':
+            printf("%.8f\n", second(x, eps));
+            break;
+        case 'c':
+            printf("%.8f\n", third(x, eps));
+            break;
+        case 'd':
+            printf("%.8f\n", fourth(x, eps));
+            break;
+        case 'z':
+            printf("Equation a: %.8f\n", first(x, eps));
+            printf("Equation b: %.8f\n", second(x, eps));
+            printf("Equation c: %.8f\n", third(x, eps));
+            printf("Equation d: %.8f\n", fourth(x, eps));
+            break;
+    }
+
+    printf("\n");
 
     return 0;
 }
