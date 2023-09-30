@@ -7,95 +7,166 @@
 
 typedef long long ll;
 
-double first(double x, double eps) 
-{
-    double res = exp(x);
-    return res;
-}
-
-double second(double x, double eps) 
-{
-    double res = cos(x);
-    return res;
-}
-
-enum convergence_status_codes
-{
-    csc_okay, 
-    csc_error
+struct Solution {
+    int code;
+    double res_fi, res_se;
 };
 
-enum convergence_status_codes third(double x, double eps) // converges only @ |x| <= 1
-{   
-    if (fabs(x) > 1.0) {
+enum status_codes
+{
+    sc_okay,
+    sc_no_solution,
+    sc_one_solution,
+    sc_two_solutions
+};
 
-    } 
-    double res = 1.0, elem = 1.0, diff = 1.0 + eps, last = 1.0, curr = 2.0, next = 3.0;
-    for (int n = 1; elem > eps; n++) 
-    {
-        elem *= 27 * x * x * n * n * n / (last * curr * next);
-        res += elem;
-        last += 3, curr += 3, next += 3;
+enum status_codes solve_equation(double eps, double a, double b, double c, double* x1, double* x2) 
+{
+    double D = b * b - 4 * a * c;
+
+    if (D < 0) {
+        return sc_no_solution;
     }
-    return res;
+
+    if (D == 0) {
+        *x1 = (-b + sqrt(D)) / 2 * a;
+        return sc_one_solution;
+    }
+    
+    *x1 = (-b + sqrt(D)) / 2 * a;
+    *x2 = (-b - sqrt(D)) / 2 * a;
+
+    return sc_two_solutions;
 }
 
-double fourth(double x, double eps) // converges only @ |x| <= 1
+bool is_digit(char ch) {
+    return (ch >= '0' && ch <= '9') ? true : false;
+}
+
+double scientific_notation(char* ch) 
 {
-    // if (fabs(x) > 1) {
-    //     return 
-    // }
-    double res = 0.0, elem = 1.0, odd = 1.0, even = 2.0;
-    for (int n = 1; fabs(elem) > eps; n++) 
+    int coef = 1, d = 10, i;
+    for (i = 0; ch[i] != 'e'; i++) 
     {
-        elem *= (-1) * x * x * odd / even;
-        res += elem;
-        even += 2.0, odd += 2.0;
+        if (i == 0 && is_digit(ch[i]) && ch[i] != '0') 
+        {
+            coef *= (ch[i] - '0');
+        }
+        else if (is_digit(ch[i])) 
+        {
+            coef = coef * d + (ch[i] - '0');
+            d *= 10;
+        }
     }
-    return res;
+
+    if (ch[i + 1] != '-') 
+    {
+        return 2.0; 
+    }
+
+    i += 2; // we stopped at e => '-' will be right after e
+
+    int power = 1;
+    if (is_digit(ch[i]) && ch[i] != '0') 
+    {
+        power *= (ch[i] - '0');
+    }
+
+    i += 1, d = 10;
+    for (; ch[i] != '\0'; i++) 
+    {
+        if (is_digit(ch[i])) 
+        {
+            power = power * d + (ch[i] - '0');
+            d *= 10;
+        }
+    }
+
+    double eps = coef * pow(10, -power);
+
+    return eps;
+}
+
+double get_epsilon(char* ch) 
+{
+    for (int i = 0; ch[i] != '\0'; i++) 
+    {
+        if (ch[i] == 'e') 
+        {
+            double eps = scientific_notation(ch);
+            return eps;
+        }
+    }
+
+    double eps = strtod(ch, NULL);
+
+    return eps;
+}
+
+void swap(double* a, double* b) {
+    double tmp;
+    tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+bool is_triangle(double a, double b, double c, double eps) {
+    if (fabs(sqrt(a * a + b * b) - c) < eps) {
+        return true;
+    }
+    if (fabs(sqrt(c * c + b * b) - a) < eps) {
+        return true;
+    }
+    if (fabs(sqrt(a * a + c * c) - b) < eps) {
+        return true;
+    }
+    return false;
+}
+
+void result_array(double* coef_array, double eps, struct Solution res[]) {
+    double res1, res2;
+    if (solve_equation(eps, coef_array[0], coef_array[1], coef_array[2], &res1, &res2) == sc_one_solution) {
+        res[0].code = 1;
+    }
+    if (solve_equation(eps, coef_array[0], coef_array[1], coef_array[2], &res1, &res2) == sc_two_solutions) {
+        printf("%.7f %.7f \n", res1, res2);
+    }
+    if (solve_equation(eps, coef_array[0], coef_array[1], coef_array[2], &res1, &res2) == sc_no_solution) {
+        printf("No solutions such that x ∈ R. \n");
+    }
+    // for (int i = 0; i < 3; i++) {
+    //     printf("%.5f ", arr[i]);
+    // }
+    // printf("\n");
+}
+
+void make_permutations(double* arr[], int start, int finish, double eps, struct Solution* res[]) {
+    if (start == finish) {
+        result_array(arr, eps, res);
+        return;
+    }
+
+    for (int i = start; i < finish; i++) {
+        swap(&arr[start], &arr[i]);
+        make_permutations(arr, start + 1, finish, eps, res);
+        swap(&arr[start], &arr[i]);
+    }
 }
 
 int main(int argc, char* argv[]) 
 {
+    double eps = get_epsilon(argv[2]);
+    double a = strtod(argv[3], NULL), b = strtod(argv[4], NULL), c = strtod(argv[5], NULL); // check correctness of input
 
-    if (argc != 3) 
-    {
-        printf("Invalid amount of arguments. Usage: %s <integer> <epsilon> \n", argv[0]);
-        return 1;
-    }
+    double coef_array[] = {a, b, c};
 
-    double x = strtod(argv[1], NULL);
-    double eps = strtod(argv[2], NULL);
+    int num = 6;
+    struct Solution* res_array = (struct Solution*)malloc(num * sizeof(struct Solution));
 
-    printf("Choose the equation: a, b, c or d? \nOr, if you want to output all of them, press z.\n");
+    // // посортить изначальный массивчик
 
-    char choice;
-    scanf("%c", &choice);
+    make_permutations(coef_array, 0, 3, eps, res_array);
 
-    switch(choice) 
-    {
-        case 'a':
-            printf("%.8f\n", first(x, eps));
-            // printf("i work like a dog 7 days a week\n");
-            break;
-        case 'b':
-            printf("%.8f\n", second(x, eps));
-            break;
-        case 'c':
-            printf("%.8f\n", third(x, eps));
-            break;
-        case 'd':
-            printf("%.8f\n", fourth(x, eps));
-            break;
-        case 'z':
-            printf("Equation a: %.8f\n", first(x, eps));
-            printf("Equation b: %.8f\n", second(x, eps));
-            printf("Equation c: %.8f\n", third(x, eps));
-            printf("Equation d: %.8f\n", fourth(x, eps));
-            break;
-    }
-
-    printf("\n");
 
     return 0;
 }
