@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
         double initial_array[3] = {a, b, c};
 
         selection_sort(initial_array, 3, eps);
-
+        
         int size_array = 6; // n! -- num of permutations
         struct Solution* solution_array = (struct Solution*)malloc(size_array * sizeof(struct Solution));
 
