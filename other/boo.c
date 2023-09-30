@@ -7,39 +7,70 @@
 
 typedef long long ll;
 
-struct Solution {
-    int code;
-    double res_fi, res_se;
-};
-
-enum status_codes
+double first(double x, double eps) 
 {
-    sc_okay,
-    sc_no_solution,
-    sc_one_solution,
-    sc_two_solutions
-};
-
-enum status_codes solve_equation(double eps, double a, double b, double c, double* x1, double* x2) 
-{
-    double D = b * b - 4 * a * c;
-
-    if (D < 0) {
-        return sc_no_solution;
-    }
-
-    if (D == 0) {
-        *x1 = (-b + sqrt(D)) / 2 * a;
-        return sc_one_solution;
-    }
-    
-    *x1 = (-b + sqrt(D)) / 2 * a;
-    *x2 = (-b - sqrt(D)) / 2 * a;
-
-    return sc_two_solutions;
+    double res = exp(x);
+    return res;
 }
 
-bool is_digit(char ch) {
+double second(double x, double eps) 
+{
+    double res = cos(x);
+    return res;
+}
+
+enum convergence_status_codes 
+{
+    csc_okay, 
+    csc_error
+};
+
+enum convergence_status_codes third(double x, double eps, double* res) 
+{
+    if (fabs(x) >= 1.0 - eps) 
+    {
+        return csc_error;
+    }
+    else 
+    {
+        double elem = 1.0, last = 1.0, curr = 2.0, next = 3.0;
+        for (int n = 1; elem > eps; n++) 
+        {
+            elem *= 27 * x * x * n * n * n / (last * curr * next);
+            *res += elem;
+            last += 3, curr += 3, next += 3;
+        }
+        return csc_okay;
+    }
+}
+
+enum convergence_status_codes fourth(double x, double eps, double* res) 
+{
+    if (fabs(x) >= 1.0 - eps) 
+    {
+        return csc_error;
+    }
+    else {
+        *res = 0;
+        double elem = 1.0, odd = 1.0, even = 2.0;
+        for (int n = 1; fabs(elem) > eps; n++) 
+        {
+            elem *= (-1) * x * x * odd / even;
+            *res += elem;
+            even += 2.0, odd += 2.0;
+        }
+        printf("Result: %.5f \n", *res);
+        return csc_okay;
+    }
+}
+
+bool is_valid(enum convergence_status_codes code) 
+{
+    return code == csc_okay ? true : false;
+}
+
+bool is_digit(char ch) 
+{
     return (ch >= '0' && ch <= '9') ? true : false;
 }
 
@@ -103,70 +134,53 @@ double get_epsilon(char* ch)
     return eps;
 }
 
-void swap(double* a, double* b) {
-    double tmp;
-    tmp = *a;
-    *a = *b;
-    *b = tmp;
-}
-
-bool is_triangle(double a, double b, double c, double eps) {
-    if (fabs(sqrt(a * a + b * b) - c) < eps) {
-        return true;
-    }
-    if (fabs(sqrt(c * c + b * b) - a) < eps) {
-        return true;
-    }
-    if (fabs(sqrt(a * a + c * c) - b) < eps) {
-        return true;
-    }
-    return false;
-}
-
-void result_array(double* coef_array, double eps, struct Solution res[]) {
-    double res1, res2;
-    if (solve_equation(eps, coef_array[0], coef_array[1], coef_array[2], &res1, &res2) == sc_one_solution) {
-        res[0].code = 1;
-    }
-    if (solve_equation(eps, coef_array[0], coef_array[1], coef_array[2], &res1, &res2) == sc_two_solutions) {
-        printf("%.7f %.7f \n", res1, res2);
-    }
-    if (solve_equation(eps, coef_array[0], coef_array[1], coef_array[2], &res1, &res2) == sc_no_solution) {
-        printf("No solutions such that x ∈ R. \n");
-    }
-    // for (int i = 0; i < 3; i++) {
-    //     printf("%.5f ", arr[i]);
-    // }
-    // printf("\n");
-}
-
-void make_permutations(double* arr[], int start, int finish, double eps, struct Solution* res[]) {
-    if (start == finish) {
-        result_array(arr, eps, res);
-        return;
-    }
-
-    for (int i = start; i < finish; i++) {
-        swap(&arr[start], &arr[i]);
-        make_permutations(arr, start + 1, finish, eps, res);
-        swap(&arr[start], &arr[i]);
-    }
-}
-
 int main(int argc, char* argv[]) 
 {
+
+    if (argc != 3) 
+    {
+        printf("Invalid amount of arguments. Usage: %s <integer> <epsilon> \n", argv[0]);
+        return 1;
+    }
+
+    double x = strtod(argv[1], NULL);
     double eps = get_epsilon(argv[2]);
-    double a = strtod(argv[3], NULL), b = strtod(argv[4], NULL), c = strtod(argv[5], NULL); // check correctness of input
 
-    double coef_array[] = {a, b, c};
+    printf("Choose the equation: a, b, c or d? \n");
 
-    int num = 6;
-    struct Solution* res_array = (struct Solution*)malloc(num * sizeof(struct Solution));
+    char choice;
+    scanf("%c", &choice);
 
-    // // посортить изначальный массивчик
+    double res = 1.0;
 
-    make_permutations(coef_array, 0, 3, eps, res_array);
+    switch(choice) 
+    {
+        case 'a':
+            printf("%.10f\n", first(x, eps));
+            break;
 
+        case 'b':
+            printf("%.10f\n", second(x, eps));
+            break;
+
+        case 'c':
+            if (is_valid(third(x, eps, &res))) 
+            { 
+                printf("%.10f\n", res);
+            }
+            else 
+                printf("Error! The series diverges when |x| > 1\n");
+            break;
+
+        case 'd':
+            if (is_valid(fourth(x, eps, &res)))
+            { 
+                printf("%.10f\n", res);
+            }
+            else 
+                printf("Error! The series diverges when |x| > 1\n");
+            break;
+    }
 
     return 0;
 }

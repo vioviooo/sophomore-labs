@@ -5,131 +5,101 @@
 #include <limits.h>
 #include <math.h>
 
-enum status_codes
+enum status_codes_eps 
 {
-    sc_okay,
-    sc_no_solution,
-    sc_one_solution,
-    sc_two_solutions
+    sc_okay_exp, // exponential form 1e-5
+    sc_okay_ord, // ordinary form : 0.00001
+    sc_error
 };
 
-enum status_codes solve_equation(double eps, double a, double b, double c, double* x1, double* x2) 
+bool is_digit(char ch) 
 {
-    double D = b * b - 4 * a * c;
-
-    if (D < 0) {
-        return sc_no_solution;
-    }
-
-    if (D == 0) {
-        *x1 = (-b + sqrt(D)) / 2 * a;
-        return sc_one_solution;
-    }
-    
-    *x1 = (-b + sqrt(D)) / 2 * a;
-    *x2 = (-b - sqrt(D)) / 2 * a;
-
-    return sc_two_solutions;
+    return (ch >= '0' && ch <= '9') ? true : false;
 }
 
-void swap(double *a, double *b) {
-    double temp = *a;
-    *a = *b;
-    *b = temp;
-}
+double scientific_notation(char* ch) 
+{
+    double eps;
 
-struct Solution {
-    int code;
-    double res1, res2;
-};
+    double coef = ch[0] - '0';
 
-void solutions_to_array(double vec[3], struct Solution* arr, double eps, int* count) {
-
-    double res1, res2;
-
-    if (solve_equation(eps, vec[0], vec[1], vec[2], &res1, &res2) == sc_one_solution) {
-        arr[*count].code = 1;
-        arr[*count].res1 = res1;
-    }
-    if (solve_equation(eps, vec[0], vec[1], vec[2], &res1, &res2) == sc_two_solutions) {
-        arr[*count].code = 2;
-        arr[*count].res1 = res1;
-        arr[*count].res2 = res2;
-    }
-    if (solve_equation(eps, vec[0], vec[1], vec[2], &res1, &res2) == sc_no_solution) {
-        arr[*count].code = 0;
-    }
-
-    // for (int i = 0; i < 3; i++) {
-    //     printf("%.3f ", vec[i]);
-    // }
-    // printf("\n");
-}
-
-void next_permutation(double* vec, double eps, int start, int finish, struct Solution* arr, int* count) {
-    if (start == finish) 
+    double power = 1.0, d = 10;
+    for (int i = 3; ch[i] != '\0'; i++) 
     {
-        solutions_to_array(vec, arr, eps, count);
-        (*count)++;
-        return;
-    }
-
-    for (int i = start; i < finish; i++) 
-    {
-        swap(&vec[start], &vec[i]);
-        next_permutation(vec, eps, start + 1, finish, arr, count);
-        swap(&vec[start], &vec[i]);
-    }
-}
-
-void selection_sort(double* arr, int size) {
-    for (int i = 0; i < size - 1; i++) {
-        for (int j = 0; j < size; j++) {
-            if (arr[i] < arr[j]) swap(&arr[i], &arr[j]);
+        if (i != 3) 
+        {
+            power = power * d + (ch[i] - '0');
+            d *= 10;
+        }
+        else 
+        {
+            power = ch[i] - '0';
         }
     }
+
+    eps = coef * pow(10, -power);
+
+    return eps;
 }
 
-int main() {
-    double initial_array[3] = {-1, 20, -14};
-
-    selection_sort(initial_array , 3);
-
-    for (int i = 0; i < 3; i++) {
-        printf("%.2f ", initial_array[i]);
+enum status_codes_eps get_epsilon(char* ch) 
+{   
+    int e_count = 0, hyphen_count = 0, dot_count = 0, ind_e, ind_h;
+    for (int i = 0; ch[i] != '\0'; i++) {
+        if (ch[i] == 'e') {
+            ind_e = i;
+            e_count++;
+        }
+        else if (ch[i] == '-') {
+            hyphen_count++;
+            ind_h = i;
+        }
+        else if (ch[i] == '.') {
+            dot_count++;
+        }
+        else if (!is_digit(ch[i])) {
+            return sc_error;
+        }
     }
 
-    int size_array = 6;
-    struct Solution* solution_array = (struct Solution*)malloc(size_array * sizeof(struct Solution));
+    if (dot_count > 1 || hyphen_count > 1 || e_count > 1) {
+        return sc_error;
+    }
 
-    if (solution_array == NULL) 
+    if (e_count == 0 && hyphen_count == 0 && dot_count == 1) {
+        return sc_okay_ord;
+    }
+
+    if (ind_e != 1) {
+        return sc_error;
+    }
+
+    if (ind_e == ind_h - 1) {
+        return sc_okay_exp;
+    }
+
+    return sc_error;
+
+}
+
+int main(int argc, char* argv[]) 
+{
+    
+    if (get_epsilon(argv[1]) == sc_error) 
     {
-        printf("Memory allocation failed lol \n");
+        printf("Invalid epsilon\n");
         return 1;
     }
-
-    int cnt = 0;
-    int* count = &cnt;
-
-    next_permutation(initial_array, 0.0001, 0, 3, solution_array, count);
-
-    for (int i = 0; i < 6; i++) 
+    else if (get_epsilon(argv[1]) == sc_okay_exp) 
     {
-        if (solution_array[i].code == 0) 
-        {
-            printf("No solutions such that x ∈ R found. \n");
-        }
-        else if (solution_array[i].code == 1) 
-        {
-            printf("One solution found: x1 = %.2f \n", solution_array[i].res1);
-        }
-        else if (solution_array[i].code == 2) 
-        {
-            printf("Two solutions found: x1 = %.2f, x2 = %.2f \n", solution_array[i].res1, solution_array[i].res2);
-        }
+        double res = scientific_notation(argv[1]);
+        printf("%.5f\n", res);
     }
-
-    free(solution_array);
+    else if (get_epsilon(argv[1]) == sc_okay_ord) 
+    {
+        double res = strtod(argv[1], NULL);
+        printf("%.5f\n", res);
+    }
 
     return 0;
 }
