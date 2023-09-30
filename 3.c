@@ -66,7 +66,7 @@ void solutions_to_array(double (*ptr)[3], struct Solution* arr, double eps, int*
 void next_permutation(double (*ptr)[3], double eps, int start, int finish, struct Solution* arr, int* count) {
     if (start == finish) 
     {
-        solutions_to_array(&(*ptr), arr, eps, count);
+        solutions_to_array(ptr, arr, eps, count);
         (*count)++;
         return;
     }
@@ -79,69 +79,88 @@ void next_permutation(double (*ptr)[3], double eps, int start, int finish, struc
     }
 }
 
-bool is_digit(char ch) {
+////
+
+enum status_codes_eps 
+{
+    sc_okay_exp, // exponential form 1e-5
+    sc_okay_ord, // ordinary form : 0.00001
+    sc_error
+};
+
+bool is_digit(char ch) 
+{
     return (ch >= '0' && ch <= '9') ? true : false;
 }
 
 double scientific_notation(char* ch) 
 {
-    int coef = 1, d = 10, i;
-    for (i = 0; ch[i] != 'e'; i++) 
-    {
-        if (i == 0 && is_digit(ch[i]) && ch[i] != '0') 
-        {
-            coef *= (ch[i] - '0');
-        }
-        else if (is_digit(ch[i])) 
-        {
-            coef = coef * d + (ch[i] - '0');
-            d *= 10;
-        }
-    }
+    double eps;
 
-    if (ch[i + 1] != '-') 
-    {
-        return 2.0; 
-    }
+    double coef = ch[0] - '0';
 
-    i += 2; // we stopped at e => '-' will be right after e
-
-    int power = 1;
-    if (is_digit(ch[i]) && ch[i] != '0') 
+    double power = 1.0, d = 10;
+    for (int i = 3; ch[i] != '\0'; i++) 
     {
-        power *= (ch[i] - '0');
-    }
-
-    i += 1, d = 10;
-    for (; ch[i] != '\0'; i++) 
-    {
-        if (is_digit(ch[i])) 
+        if (i != 3) 
         {
             power = power * d + (ch[i] - '0');
             d *= 10;
         }
-    }
-
-    double eps = coef * pow(10, -power);
-
-    return eps;
-}
-
-double get_epsilon(char* ch) 
-{
-    for (int i = 0; ch[i] != '\0'; i++) 
-    {
-        if (ch[i] == 'e') 
+        else 
         {
-            double eps = scientific_notation(ch);
-            return eps;
+            power = ch[i] - '0';
         }
     }
 
-    double eps = strtod(ch, NULL);
+    eps = coef * pow(10, -power);
 
     return eps;
 }
+
+enum status_codes_eps get_epsilon(char* ch) 
+{   
+    int e_count = 0, hyphen_count = 0, dot_count = 0, ind_e, ind_h;
+    for (int i = 0; ch[i] != '\0'; i++) {
+        if (ch[i] == 'e') {
+            ind_e = i;
+            e_count++;
+        }
+        else if (ch[i] == '-') {
+            hyphen_count++;
+            ind_h = i;
+        }
+        else if (ch[i] == '.') {
+            dot_count++;
+        }
+        else if (!is_digit(ch[i])) {
+            return sc_error;
+        }
+    }
+
+    printf("%d \n", dot_count);
+
+    if (dot_count > 1 || hyphen_count > 1 || e_count > 1) {
+        return sc_error;
+    }
+
+    if (e_count == 0 && hyphen_count == 0 && dot_count == 1) {
+        return sc_okay_ord;
+    }
+
+    if (ind_e != 1) {
+        return sc_error;
+    }
+
+    if (ind_e == ind_h - 1) {
+        return sc_okay_exp;
+    }
+
+    return sc_error;
+
+}
+
+/////
 
 void selection_sort(double *arr, int size, double eps) {
     for (int i = 0; i < size - 1; i++) {
@@ -194,17 +213,33 @@ int main(int argc, char* argv[])
     {
         if (argc != 6) 
         {
-            printf("Invalid amount of arguments. Usage: %s <flag> <epsilon> <coef #1> ... <coef #4> \n", argv[0]);
+            printf("Invalid amount of arguments. Usage: %s <flag> <epsilon> <coef #1> ... <coef #3> \n", argv[0]);
             return 1;
         }
 
         double a = strtod(argv[3], NULL), b = strtod(argv[4], NULL), c = strtod(argv[5], NULL);
-        double eps = get_epsilon(argv[2]);
+
+        double eps;
+        if (get_epsilon(argv[2]) == sc_error) 
+        {
+            printf("Invalid epsilon\n");
+            return 1;
+        }
+        else if (get_epsilon(argv[2]) == sc_okay_exp) 
+        {
+            eps = scientific_notation(argv[2]);
+            // printf("%.5f\n", eps);
+        }
+        else if (get_epsilon(argv[2]) == sc_okay_ord) 
+        {
+            eps = strtod(argv[2], NULL);
+            // printf("%.5f\n", eps);
+        }
 
         double initial_array[3] = {a, b, c};
 
         selection_sort(initial_array, 3, eps);
-        
+
         int size_array = 6; // n! -- num of permutations
         struct Solution* solution_array = (struct Solution*)malloc(size_array * sizeof(struct Solution));
 
@@ -247,17 +282,33 @@ int main(int argc, char* argv[])
         }
 
         double a = strtod(argv[2], NULL), b = strtod(argv[3], NULL);
-        double eps = strtod(argv[4], NULL);
+
+        double eps;
+        if (get_epsilon(argv[4]) == sc_error) 
+        {
+            printf("Invalid epsilon\n");
+            return 1;
+        }
+        else if (get_epsilon(argv[4]) == sc_okay_exp) 
+        {
+            eps = scientific_notation(argv[4]);
+            printf("%.5f\n", eps);
+        }
+        else if (get_epsilon(argv[4]) == sc_okay_ord) 
+        {
+            eps = strtod(argv[4], NULL);
+            printf("%.5f\n", eps);
+        }
 
         double rem = fabs(a) - fabs((int)(a / b) * b);
 
         if (rem < eps) 
         {
-            printf("%.4f Yes\n", rem);
+            printf("Yes\n");
         }
         else 
         {
-            printf("%.4f No\n", rem);
+            printf("No\n");
         }
     }
 
@@ -270,7 +321,23 @@ int main(int argc, char* argv[])
         }
 
         double a = strtod(argv[2], NULL), b = strtod(argv[3], NULL), c = strtod(argv[4], NULL);
-        double eps = strtod(argv[5], NULL);
+
+        double eps;
+        if (get_epsilon(argv[5]) == sc_error) 
+        {
+            printf("Invalid epsilon\n");
+            return 1;
+        }
+        else if (get_epsilon(argv[5]) == sc_okay_exp) 
+        {
+            eps = scientific_notation(argv[5]);
+            // printf("%.5f\n", eps);
+        }
+        else if (get_epsilon(argv[5]) == sc_okay_ord) 
+        {
+            eps = strtod(argv[5], NULL);
+            // printf("%.5f\n", eps);
+        }
 
         if (is_triangle(a, b, c, eps)) 
         {
