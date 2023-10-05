@@ -208,6 +208,7 @@ ld sqrtEquation(ld eps) {
     }
     return x;
 }
+
 //////////
 
 double combination(int m, int k) {

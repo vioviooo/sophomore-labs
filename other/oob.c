@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <math.h>
 
+typedef char* string;
+
 enum status_codes_eps 
 {
     sc_okay_exp, // exponential form 1e-5
@@ -82,24 +84,16 @@ enum status_codes_eps get_epsilon(char* ch)
 
 }
 
-int main(int argc, char* argv[]) 
+int main() 
 {
-    
-    if (get_epsilon(argv[1]) == sc_error) 
-    {
-        printf("Invalid epsilon\n");
-        return 1;
-    }
-    else if (get_epsilon(argv[1]) == sc_okay_exp) 
-    {
-        double res = scientific_notation(argv[1]);
-        printf("%.5f\n", res);
-    }
-    else if (get_epsilon(argv[1]) == sc_okay_ord) 
-    {
-        double res = strtod(argv[1], NULL);
-        printf("%.5f\n", res);
-    }
+    char st[] = "poo";
+    // char* st[] = {'p', 'o', 'o'};
+    // st = "poo";
+    // for (int i = 0; i < 3; i++) {
+
+    // }
+
+    printf("%c \n", st[4]);
 
     return 0;
 }
