@@ -15,8 +15,16 @@ bool is_digit(char ch) {
 }
 
 bool is_valid_num(char st[]) {
+
+    if (st[0] == '-' && st[1] == '\0') {
+        return 0;
+    }
+    
     for (int i = 0; st[i] != '\0'; i++) {
-        if (!is_digit(st[i])) {
+        if (!is_digit(st[i]) && st[i] != '-') {
+            return 0;
+        }
+        if (st[i] == '-' && i != 0) {
             return 0;
         }
     }
@@ -41,8 +49,10 @@ int main(int argc, char* argv[]) {
     }
 
     ll a, b;
-    a = atoll(argv[1]);
-    b = atoll(argv[2]);
+    a = MIN(atoll(argv[1]), atoll(argv[2]));
+    b = MAX(atoll(argv[2]), atoll(argv[1]));
+
+    // printf("%lld %lld \n", a, b);
 
     ll arr[10];
 
@@ -82,8 +92,8 @@ int main(int argc, char* argv[]) {
     int size_a = size_begin + rand() % (size_end - size_begin + 1), 
         size_b = size_begin + rand() % (size_end - size_begin + 1);
 
-    size_a = 10;
-    size_b = 10;
+    // size_a = 10;
+    // size_b = 10;
 
     int* arr_a = (int*)malloc(size_a * sizeof(int));
     int* arr_b = (int*)malloc(size_b * sizeof(int));
@@ -122,7 +132,7 @@ int main(int argc, char* argv[]) {
     } 
 
     printf("\n\nFinal array C: \n");
-    for (int i = 0; i < size_b; i++) {
+    for (int i = 0; i < size_a; i++) {
         printf("%d ", arr_c[i]);
     }
     printf("\n");
@@ -130,8 +140,6 @@ int main(int argc, char* argv[]) {
     free(arr_a);
     free(arr_b);
     free(arr_c);
-
-    // int* ptr_n;
 
     return 0;
 }

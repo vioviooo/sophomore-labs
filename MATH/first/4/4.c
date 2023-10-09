@@ -20,43 +20,6 @@ bool is_letter(char ch)
     return ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) ? 1 : 0;
 }
 
-bool is_valid_file(char ch[]) 
-{
-    char allowed[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.";
-    for (int i = 0; ch[i] != '\0'; i++) // check for prohibited characters in a filename
-    {
-        bool flag = true;
-        for (int j = 0; allowed[j] != '\0' && flag; j++) 
-        {
-            if (ch[i] == allowed[j]) 
-            {
-                flag = false;
-            }
-        }
-
-        if (flag) 
-        {
-            return 0;
-        }
-    }
-    
-    for (int i = 0; ch[i] != '\0'; i++) 
-    {
-        if (ch[i] == '.') 
-        {
-            if (strlen(ch) - i - 1 != 3) {
-                return 0;
-            }
-            else 
-            {
-                return (ch[i + 1] == 't' && ch[i + 2] == 'x' && ch[i + 3] == 't') ? 1 : 0;
-            }
-        }
-    }
-
-    return 0;
-}
-
 int main(int argc, char* argv[]) 
 {
     if (argc < 3 || argc > 4) 
@@ -90,6 +53,11 @@ int main(int argc, char* argv[])
             }
         }
     }
+
+    if ((strlen(argv[1]) == 2 && argc != 4) || (strlen(argv[1]) == 3 && argc != 3)) {
+        printf("Invalid amount of arguments.\n");
+        return 1;
+    }
     
     if (ind == -1) 
     {
@@ -97,17 +65,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (!is_valid_file(argv[2])) {
-        printf("Error! Invalid filename.\n");
-        return 1;
-    }
-
-    char input_file[256];
-    char output_file[256];
+    char input_file[257];
+    char output_file[257];
 
     if (argc == 3) 
     {
-        strcpy(output_file, "out_");
+        strcpy(output_file, "out_"); // strcpy_s
         strcat(output_file, argv[2]);
     } 
     else 
@@ -120,7 +83,7 @@ int main(int argc, char* argv[])
     FILE* fptr = fopen(input_file, "r");
     FILE* fptr_out = fopen(output_file, "w");
 
-    if (fptr == NULL || fptr_out == NULL) 
+    if (fptr == NULL || fptr_out == NULL)  // close not null
     {
         printf("File couldn't be opened. \n");
         return 1;
@@ -160,9 +123,7 @@ int main(int argc, char* argv[])
                     }
                 }
             }
-            if (cnt != 0) {
-                fprintf(fptr_out, "%d \n", cnt);
-            }
+            fprintf(fptr_out, "%d \n", cnt);
             break;
         }
         case 2:
@@ -179,9 +140,7 @@ int main(int argc, char* argv[])
                     cnt++;
                 }
             }
-            if (cnt != 0) { // condition for the very last line
-                fprintf(fptr_out, "%d \n", cnt);
-            }
+            fprintf(fptr_out, "%d \n", cnt);
             break;
         }
         case 3:
