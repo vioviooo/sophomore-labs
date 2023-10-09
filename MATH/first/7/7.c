@@ -3,25 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 
-bool is_valid_file(char ch[]) 
-{   
-    for (int i = 0; ch[i] != '\0'; i++) 
-    {
-        if (ch[i] == '.') 
-        {
-            if (strlen(ch) - i - 1 != 3) 
-            {
-                return 0;
-            }
-            else 
-            {
-                return (ch[i + 1] == 't' && ch[i + 2] == 'x' && ch[i + 3] == 't') ? 1 : 0;
-            }
-        }
-    }
-    return 0;
-}
-
 bool is_letter(char ch) {
     return (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z') ? 1 : 0;
 }
@@ -44,8 +25,6 @@ int dec_to_eighth(int n) {
         i++;
     }
 
-    // printf("%d %d\n", arr[0], arr[1]);
-
     int num = 0, d = 1;
     for (int j = 0; j < i; j++) {
         num = arr[j] * d + num;
@@ -56,7 +35,7 @@ int dec_to_eighth(int n) {
 }
 
 int dec_to_fourth(int n) {
-    int arr[10];
+    int arr[BUFSIZ];
     int i = 0;
 
     while (n != 0) {
@@ -94,11 +73,6 @@ int main(int argc, char* argv[]) {
 
         if (argc != 5) {
             printf("Invalid amount of arguments. Usage: %s <flag> <file1_route> <file2_route> <route_out> \n", argv[0]);
-            return 1;
-        }
-
-        if (!is_valid_file(argv[2]) || !is_valid_file(argv[3]) || !is_valid_file(argv[4])) {
-            printf("Error! Invalid filename.\n");
             return 1;
         }
 
@@ -160,11 +134,6 @@ int main(int argc, char* argv[]) {
 
         if (argc != 4) {
             printf("Invalid amount of arguments. Usage: %s <flag> <file_route> <route_out> \n", argv[0]);
-            return 1;
-        }
-
-        if (!is_valid_file(argv[2]) || !is_valid_file(argv[3])) {
-            printf("Error! Invalid filename.\n");
             return 1;
         }
 
