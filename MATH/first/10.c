@@ -1,33 +1,3 @@
-// enum... join_symb(char **src, char symb, int *capacity) {
-//     if (*capacity == strlen(src) + 1) {
-//         *capacity *= 2;
-
-//         char *temp = (char*)realloc(*src, sizeof(char) * capacity);
-
-//         if (temp == NULL) {
-//             return error;
-//         }
-
-//         *src = temp;
-//     }
-
-//     (*src)[strlen(*src) + 1] = 0;
-//     (*src)[strlen(*src)] = symb;
-// }
-
-// //realloc со сложностью армотизированной константы
-
-// int get_str(char **src, FILE*) {
-//     *src = NULL;
-//     int capacity = 2;
-
-//     *src = (char*)malloc(sizeof(char) * capacity);
-
-//     while ('\n') {
-//         join_symb(src, fgetc(stream), &capacity);
-//     }
-// }
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -128,8 +98,6 @@ enum status_codes is_valid_string(char* ptr) {
     }
 }
 
-
-
 enum status_codes is_valid_num(char* ptr, int base) {
     while(*ptr != '\0') {
         if (isdigit(*ptr) && (*ptr - '0') >= base) {
@@ -177,26 +145,26 @@ char* decimal_to_base(int base, int num) {
 
 ////////////////////////////////////////////////////////////////////
 
-enum status_codes join_symb(char symb, char **str, int *size) {
-	if (*size == 0) {
-		*size = 2;
-		*str = (char*)malloc(sizeof(char) * *size);
+enum status_codes join_symb(char symb, char** str, int* capacity) {
+	if (*capacity == 0) {
+		*capacity = 2; // 1 char + '\0'
+		*str = (char*)malloc(sizeof(char) * *capacity);
 
 		if (!*str) {
 			return NO_MEMORY;
 		}
 
 		(*str)[0] = symb;
-		(*str)[1] = 0;
+		(*str)[1] = '\0';
 
 		return OK;
 	}
 
 	int len = strlen(*str);
 
-	if (len == *size - 1) {
-		*size *= 2;
-		char *temp = (char*)realloc(*str, sizeof(char) * *size);
+	if (len == *capacity - 1) {
+		*capacity *= 2;
+		char *temp = (char*)realloc(*str, sizeof(char) * *capacity);
 		
 		if (!temp) {
 			return NO_MEMORY;
@@ -205,7 +173,7 @@ enum status_codes join_symb(char symb, char **str, int *size) {
 		*str = temp;
 	}
 
-	(*str)[len + 1] = 0;
+	(*str)[len + 1] = '\0';
 	(*str)[len] = symb;
 
 	return OK;
