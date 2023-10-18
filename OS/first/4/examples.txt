@@ -1,0 +1,6 @@
+int mask_hx = 0x31313131;
+file bin: 1111 => res = 1
+
+int mask_hx = 0x37333732;
+file bin: 27374568589273452737 => res = 2;
+
