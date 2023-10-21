@@ -178,6 +178,8 @@ int main(void) {
         }
     }
 
+    free(ch);
+
     return 0;
 }
 
