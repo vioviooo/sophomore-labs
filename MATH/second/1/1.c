@@ -189,7 +189,7 @@ int order(int* arr, int seed, int size) {
 
     srand(seed);
 
-    // тасование фишера-йетса
+    // тасование Фишера-Йетса
     for (int i = size - 1; i > 0; i--) {
         int j = rand() % (i + 1);
         int tmp = arr[i];
