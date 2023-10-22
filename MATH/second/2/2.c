@@ -147,7 +147,7 @@ int main(void) {
 
     switch(choice) {
         case 1: {
-            double res = geometric_mean(3, 1.3, 1.4, 4.5);
+            double res = geometric_mean(2, 1.0, 1.0);
 
             printf("Geometric mean: %f\n", res);
 
