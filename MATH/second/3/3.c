@@ -58,11 +58,16 @@ int count_next_line(const char* pattern) {
     return cnt;
 }
 
+// написать массив структур на вывод данных (вхождений)
+// убрать принтф 
 int* count_pattern_in_files(const char* pattern, int cnt, ...) {
     va_list args;
     va_start(args, cnt);
 
     int* res = (int*)malloc(sizeof(int) * cnt);
+    if (res == NULL) {
+        printf("lol didnt read: %s \n", res);
+    }
 
     for (int i = 0; i < cnt; i++) {
         const char* ptr = va_arg(args, const char*);
@@ -110,7 +115,7 @@ int* count_pattern_in_files(const char* pattern, int cnt, ...) {
 
 int main() {
 
-    const char* pattern = "kawaii";
+    const char* pattern = "";
     int file_cnt = 3;
 
     int* res = count_pattern_in_files(pattern, file_cnt, "1.txt", "2.txt", "3.txt");
