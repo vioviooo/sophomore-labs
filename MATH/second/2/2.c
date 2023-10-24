@@ -7,6 +7,7 @@
 #include <time.h>
 #include <math.h>
 #include <stdarg.h>
+#include <complex.h>
 
 typedef long long ll;
 
@@ -18,25 +19,37 @@ enum status_codes {
     INVALID_INPUT = 2,
     NO_MEMORY = -1,
     INVALID = -2,
-    OVERFLOW_ = -3
+    OVERFLOW_ = -3,
+    UNDEFINED = -4,
+    WARNING_UNUSED = 3,
+    WARNING_SMALL = 4
 };
 
 void print_scs(int choice) {
     switch(choice) {
-        case 2:
+        case INVALID_INPUT:
             printf("Invalid input.\n");
             break;
-        case 1:
+        case OK:
             printf("Project finished successfully\n");
             break;
-        case -1:
+        case NO_MEMORY:
             printf("No memory left.\n");
             break;
-        case -2: 
+        case INVALID: 
             printf("Invalid something.\n");
             break;
-        case -3:
+        case OVERFLOW_:
             printf("Overflow!\n");
+            break;
+        case UNDEFINED:
+            printf("Error! What you're trying to calculate IS UNDEFINED or uses complex numbers.\n");
+            break;
+        case WARNING_UNUSED:
+            printf("Warning! Not all input data was used.\n");
+            break;
+        case WARNING_SMALL:
+            printf("Warning! Small values may result in near zero results.\n");
             break;
         default:
             break;
@@ -78,11 +91,14 @@ bool is_valid_double(char ch[]) {
 // -00000000098980900
 // -000000 => 0
 bool is_valid_integer(char ch[]) {
-    if (ch[0] == '-') {
+    int i = 0;
+
+    if (ch[0] == '-' && ch[1] == '\0') {
         return 0;
     }
-    
-    int i = 0;
+    else if (ch[0] == '-') {
+        i = 1;
+    }
 
     while (ch[i] == '0') {
         i++;
@@ -107,17 +123,64 @@ bool is_valid_integer(char ch[]) {
 double pow_double(double num, int power) {
     if (power == 0) {
         return 1;
-    }
-    double res = pow_double(num, power / 2);
-    if (power & 1) {
-        return res * res * num;
+    } 
+    else if (power > 0) {
+        double res = pow_double(num, power / 2);
+        if (power & 1) {
+            return res * res * num;
+        }
+        else {
+            return res * res;
+        }
     }
     else {
-        return res * res;
+        double res = pow_double(num, power / 2);
+        if (power & 1) {
+            return res * res * (1.0 / num);
+        }
+        else {
+            return res * res;
+        }
     }
 }
 
-double geometric_mean(int cnt, ...) {
+int find_pow(double* res, char base_ch[], char power_ch[]) {
+
+    if (!is_valid_double(base_ch) && !is_valid_integer(base_ch)) {
+        return INVALID_INPUT;
+    }
+
+    double num = strtod(base_ch, NULL);
+
+    if (!is_valid_integer(power_ch)) {
+        return INVALID_INPUT;
+    }
+
+    int power = atoi(power_ch);
+
+    double eps = 1.0;
+    while (1.0 + eps / 2.0 > 1.0) {
+        eps /= 2.0;
+    }
+
+    if (fabs(num) < eps && power == 0) {
+        return UNDEFINED;
+    }
+
+    *res = pow_double(num, power);
+
+    if (fabs(num) < 0.1) {
+        return WARNING_SMALL;
+    }
+
+    return OK;
+}
+
+int geometric_mean(double* res, int cnt, ...) {
+    if (cnt < 1) {
+        return INVALID_INPUT;
+    }
+
     va_list args;
     va_start(args, cnt);
 
@@ -125,15 +188,28 @@ double geometric_mean(int cnt, ...) {
     for (int i = 0; i < cnt; i++) {
         mult *= va_arg(args, double);
     }
+ 
+    if (mult < 0.0) {
+        va_end(args);
+        return UNDEFINED;
+    }
 
-    double res = pow(mult, 1.0 / cnt);
+    *res = pow(mult, 1.0 / cnt);
+
+    if (va_arg(args, double) != 0) {
+        return WARNING_UNUSED;
+        va_end(args);
+    }
 
     va_end(args);
 
-    return res;
+    return OK;
 }
 
 int main(void) {
+
+    printf("Welcome to the program! Choose the desired action:\n");
+    printf("1. Find geometric mean [no input allowed]\n2. Raise a double number to the n-th power\n");
 
     char ch[BUFSIZ];
     scanf("%s", ch);
@@ -147,32 +223,44 @@ int main(void) {
 
     switch(choice) {
         case 1: {
-            double res = geometric_mean(2, 1.0, 1.0);
+            double res = 0.0;
+            int status = geometric_mean(&res, 3, -1.0, 1.0, 1.0);
+            if (status != OK && status != WARNING_UNUSED) {
+                print_scs(status);
+                exit(status);
+            }
+            else if (status == WARNING_UNUSED) {
+                print_scs(status);
+            }
 
             printf("Geometric mean: %f\n", res);
 
             break;
         }
         case 2: {
-            scanf("%s", ch);
-            if (!is_valid_double(ch)) {
-                print_scs(INVALID_INPUT);
-                return INVALID_INPUT;
+
+            char base[BUFSIZ];
+            char power[BUFSIZ];
+
+            printf("Please, enter the base [double]: ");
+
+            scanf("%s", base);
+
+            printf("Now, enter the power [integer]: ");
+
+            scanf("%s", power);
+
+            double res;
+            int status = find_pow(&res, base, power);
+            if (status != OK && status != WARNING_SMALL) {
+                print_scs(status);
+                exit(status);
+            }
+            else {
+                print_scs(status);
             }
 
-            double num = strtod(ch, NULL);
-
-            scanf("%s", ch);
-
-            if (!is_valid_integer(ch)) {
-                print_scs(INVALID_INPUT);
-                return INVALID_INPUT;
-            }
-
-            int power = atoi(ch);
-
-            double pow = pow_double(num, power);
-            printf("Raise %f to the %d power: %f \n", num, power, pow);
+            printf("Result: %.15f\n", res);
 
             break;
         }
