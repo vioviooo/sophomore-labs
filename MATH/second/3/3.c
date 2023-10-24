@@ -47,7 +47,6 @@ void print_scs(int choice) {
 
 ////////////////////main functions////////////////////////
 
-
 int count_next_line(const char* pattern) {
     int cnt = 0;
     for (int i = 0; pattern[i] != '\0'; i++) {
@@ -115,7 +114,7 @@ int* count_pattern_in_files(const char* pattern, int cnt, ...) {
 
 int main() {
 
-    const char* pattern = "";
+    const char* pattern = " ";
     int file_cnt = 3;
 
     int* res = count_pattern_in_files(pattern, file_cnt, "1.txt", "2.txt", "3.txt");
@@ -129,7 +128,7 @@ int main() {
             printf("%d\n", res[i]);
         }
         else {
-            printf("- \n");
+            printf("-\n");
         }
     }
 
