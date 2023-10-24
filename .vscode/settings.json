@@ -2,6 +2,20 @@
     "files.associations": {
         "iterator": "c",
         "vector": "cpp",
-        "time.h": "c"
+        "time.h": "c",
+        "__config": "c",
+        "algorithm": "c",
+        "atomic": "c",
+        "bit": "c",
+        "*.tcc": "c",
+        "bitset": "c",
+        "optional": "c",
+        "random": "c",
+        "istream": "c",
+        "mutex": "c",
+        "numeric": "c",
+        "stop_token": "c",
+        "functional": "c",
+        "typeinfo": "c"
     }
 }
