@@ -10,33 +10,35 @@
 #define NUM_FORKS 5
 
 pthread_t philosopher[NUM_PHILOSOPHERS + 1];
-pthread_mutex_t cutlery[NUM_FORKS + 1]; // <- семафоры
+pthread_mutex_t forks[NUM_FORKS + 1]; // <- семафоры
 
-void dine(int n) {
+void dine(int id) {
+    int right_fork = (id + 1) % NUM_FORKS;
+    int left_fork = id;
 
-    printf("Philosopher %d is thinking...\n", n);
+    printf("Philosopher %d is thinking...\n", id);
 
-    printf("Philosopher %d takes 1st fork \n", n);
-    pthread_mutex_lock(&cutlery[n]);
+    printf("Philosopher %d takes 1st fork \n", id);
+    pthread_mutex_lock(&forks[left_fork]);
 
-    printf("Philosopher %d takes 2nd fork\n", n);
-    pthread_mutex_lock(&cutlery[(n + 1) % NUM_FORKS]);
+    printf("Philosopher %d takes 2nd fork\n", id);
+    pthread_mutex_lock(&forks[right_fork]);
 
     // philosopher now has both forks => can start eating
-    printf("Philosopher %d is eating...\n", n);
+    printf("Philosopher %d is eating...\n", id);
 
     sleep(2);
 
     // philosopher puts down the first fork 
-    printf("Philosopher %d puts down 1st fork\n", n);
-    pthread_mutex_unlock(&cutlery[n]);
+    printf("Philosopher %d puts down 1st fork\n", id);
+    pthread_mutex_unlock(&forks[left_fork]);
 
     // philosopher puts down the second fork 
-    printf("Philosopher %d puts down 2nd fork\n", n);
-    pthread_mutex_unlock(&cutlery[(n + 1) % NUM_FORKS]);
+    printf("Philosopher %d puts down 2nd fork\n", id);
+    pthread_mutex_unlock(&forks[right_fork]);
 
     // philosopher dined successfully!
-    printf("Philosopher %d has finished eating\n", n);
+    printf("Philosopher %d has finished eating\n", id);
 } 
 
 /* прототип
@@ -57,7 +59,7 @@ int main(void) {
 
     // initialize mutex array
     for (int i = 1; i <= NUM_FORKS; i++) {
-        int status = pthread_mutex_init(&cutlery[i], NULL); // в нем большие отрицательные числа
+        int status = pthread_mutex_init(&forks[i], NULL); // в нем большие отрицательные числа
         // Check if the mutex is initialised successfully
         if (status == -1) {
             perror("Mutex initialization failed.\n");
@@ -88,7 +90,7 @@ int main(void) {
 
     // destroy mutex array
     for (int i = 1; i <= NUM_FORKS; i++) {
-        int status = pthread_mutex_destroy(&cutlery[i]);
+        int status = pthread_mutex_destroy(&forks[i]);
         if (status != 0) {
             perror("Mutex destruction failed.\n");
             exit(1);
