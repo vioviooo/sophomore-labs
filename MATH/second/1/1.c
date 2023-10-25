@@ -106,38 +106,81 @@ bool is_digit(char c) {
 
 ////////////////////main functions////////////////////////
 
+int duplicate_string(char initial[], int len, char** new) {
+    *new = (char*)malloc(sizeof(char) * (len + 1));
+    if (*new == NULL) {
+        return NO_MEMORY;
+    }
+
+    for (int i = 0; i < len; i++) {
+        (*new)[i] = initial[i];
+    }
+
+    (*new)[len] = '\0';
+
+    return OK;
+}
+
 void find_length(int* res, char ch[]) {
     for (int i = 0; ch[i] != '\0'; i++) {
         (*res)++;
     }
 }
 
-void reverse_string(int len, char ch[]) {
+int reverse_string(char** st, char argv[]) {
+    int len = 0;
+    find_length(&len, argv);
+
+    int status = duplicate_string(argv, len, st);
+    if (status != OK) {
+        return NO_MEMORY;
+    }
+
     int begin = 0, end = len - 1;
     while (begin < end) {
-        char tmp = ch[begin];
-        ch[begin] = ch[end];
-        ch[end] = tmp;
+        char tmp = (*st)[begin];
+        (*st)[begin] = (*st)[end];
+        (*st)[end] = tmp;
         begin++;
         end--;
     }
+    
+    (*st)[len] = '\0';
+
+    return OK;
 }
 
-void to_upper(char* ptr) {
-    *ptr = (char)((int)*ptr - 32);
+char to_upper(char ptr) {
+    ptr = (char)((int)ptr - 32);
+    return ptr;
 }
 
-void even_to_upper(char ch[]) {
-    for (int i = 0; ch[i] != '\0'; i++) {
-        if ((i & 1) && is_lower(ch[i])) {
-            to_upper(&ch[i]);
+int even_to_upper(char** ch, char argv[]) {
+    int len = 0;
+    find_length(&len, argv);
+
+    int status = duplicate_string(argv, len, ch);
+    if (status != OK) {
+        return NO_MEMORY;
+    }
+
+    for (int i = 0; i < len; i++) {
+        if ((i & 1) && is_lower((*ch)[i])) {
+            (*ch)[i] = to_upper((*ch)[i]);
         }
     }
+
+    return OK;
 }
 
-void custom_string_sort(char* res, char *input) {
+int custom_string_sort(char** res, char input[]) {
     int len = 0;
     find_length(&len, input);
+
+    *res = (char*)malloc(sizeof(char) * (len + 1));
+    if (res == NULL) {
+        return NO_MEMORY;
+    }
 
     int digit_cnt = 0;
     int letter_cnt = 0;
@@ -164,17 +207,19 @@ void custom_string_sort(char* res, char *input) {
     for (int i = 0; i < len; i++) {
         char c = input[i];
         if (is_digit(c)) {
-            res[fi] = c;
+            (*res)[fi] = c;
             fi++;
         } else if (is_alpha(c)) {
-            res[se] = c;
+            (*res)[se] = c;
             se++;
         } else {
-            res[th] = c;
+            (*res)[th] = c;
             th++;
         }
     }
-    res[len] = '\0';
+    (*res)[len] = '\0';
+
+    return OK;
 }
 
 int order(int* arr, int seed, int size) {
@@ -210,6 +255,11 @@ void concat_string(int* last, char st[], char ch[]) {
 
 int main(int argc, char* argv[]) {
 
+    if (argc < 2) {
+        print_scs(INVALID_INPUT);
+        return INVALID_INPUT;
+    }
+
     if (!is_valid_flag(argv[1])) {
         print_scs(INVALID_INPUT);
         return INVALID_INPUT;
@@ -234,34 +284,46 @@ int main(int argc, char* argv[]) {
             break;
         }
         case 'r': {
-            int len = 0;
-            find_length(&len, argv[2]);
+            char* reversed;
 
-            char* reversed = argv[2];
-
-            reverse_string(len, reversed);
+            int status = reverse_string(&reversed, argv[2]);
+            if (status != OK) {
+                print_scs(status);
+                return status;
+            }
 
             printf("Reversed: %s\n", reversed);
+
+            free(reversed);
 
             break;
         }
         case 'u': {
-            char* ch = argv[2];
-            
-            even_to_upper(ch);
-            
-            printf("Result: %s\n", ch);
+            char* res;
+
+            int status = even_to_upper(&res, argv[2]);
+            if (status != OK) {
+                print_scs(status);
+                return status;
+            }
+
+            printf("Result: %s\n", res);
+
+            free(res);
 
             break;
         }
         case 'n': {
-            int len = 0;
-            find_length(&len, argv[2]);
-  
-            char res[len + 1]; // Create a result string with enough space
-            custom_string_sort(res, argv[2]);
+            char* res; // Create a result string with enough space
+            int status = custom_string_sort(&res, argv[2]);
+            if (status != OK) {
+                print_scs(status);
+                return status;
+            }
 
-            printf("Initial: %s\nResult: %s\n", argv[2], res);
+            printf("Result: %s\n", res);
+
+            free(res);
 
             break;
         }
