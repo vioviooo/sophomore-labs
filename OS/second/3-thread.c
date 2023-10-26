@@ -63,7 +63,7 @@ int main(void) {
         // Check if the mutex is initialised successfully
         if (status == -1) {
             perror("Mutex initialization failed.\n");
-            exit(1);
+            return 1;
         }
     }
 
@@ -73,7 +73,7 @@ int main(void) {
         int status = pthread_create(&philosopher[i], NULL, (void*)dine, (void*)(intptr_t)i);
         if (status != 0) {
             perror("Thread creation failed.\n");
-            exit(1);
+            return 1;
         }
     }
 
@@ -84,7 +84,7 @@ int main(void) {
         int status = pthread_join(philosopher[i], &message);
         if (status != 0) {
             perror("Thread join failed.\n");
-            exit(1);
+            return 1;
         }
     }
 
@@ -93,7 +93,7 @@ int main(void) {
         int status = pthread_mutex_destroy(&forks[i]);
         if (status != 0) {
             perror("Mutex destruction failed.\n");
-            exit(1);
+            return 1;
         }
     }
 
