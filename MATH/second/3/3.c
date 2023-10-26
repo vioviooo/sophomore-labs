@@ -146,6 +146,8 @@ int count_pattern_in_files(Data** info, int** res, const char* pattern, int cnt,
             line_number++;
         }
 
+        free(line);
+
         fclose(fptr);
 
         (*res)[i] = cnt;
