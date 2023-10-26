@@ -13,39 +13,56 @@ typedef long long ll;
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
+typedef struct {
+    int row;
+    int column;
+} Data;
+
 enum status_codes {
     OK = 1,
-    INVALID_INPUT = -1,
-    NO_MEMORY = -2,
-    INVALID = -3,
-    OVERFLOW_ = -4
+    INVALID_INPUT = 2,
+    NO_MEMORY = -5,
+    INVALID = -2,
+    OVERFLOW_ = -3,
+    UNDEFINED = -4,
+    WARNING_UNUSED = 3,
+    WARNING_SMALL = 4,
+    FILE_NOT_OPEN = -1
 };
 
 void print_scs(int choice) {
     switch(choice) {
-        case 2:
+        case INVALID_INPUT:
             printf("Invalid input.\n");
             break;
-        case 1:
+        case OK:
             printf("Project finished successfully\n");
             break;
-        case -1:
+        case NO_MEMORY:
             printf("No memory left.\n");
             break;
-        case -2: 
+        case INVALID: 
             printf("Invalid something.\n");
             break;
-        case -3:
+        case OVERFLOW_:
             printf("Overflow!\n");
+            break;
+        case UNDEFINED:
+            printf("Error! What you're trying to calculate IS UNDEFINED or uses complex numbers.\n");
+            break;
+        case WARNING_UNUSED:
+            printf("Warning! Not all input data was used.\n");
+            break;
+        case WARNING_SMALL:
+            printf("Warning! Small values may result in near zero results.\n");
+            break;
+        case FILE_NOT_OPEN:
+            printf("Couldn't open the file.\n");
             break;
         default:
             break;
     }
 }
-
-/////////////////////// validations ///////////////////////////
-
-////////////////////main functions////////////////////////
 
 int count_next_line(const char* pattern) {
     int cnt = 0;
@@ -57,82 +74,122 @@ int count_next_line(const char* pattern) {
     return cnt;
 }
 
-// написать массив структур на вывод данных (вхождений)
-// убрать принтф 
-int* count_pattern_in_files(const char* pattern, int cnt, ...) {
+int count_pattern_in_files(Data** info, int** res, const char* pattern, int cnt, ...) {
     va_list args;
     va_start(args, cnt);
 
-    int* res = (int*)malloc(sizeof(int) * cnt);
-    if (res == NULL) {
-        printf("lol didnt read: %s \n", res);
+    int capacity = 1;
+    *info = (Data*)malloc(sizeof(Data) * capacity);
+    if (*info == NULL) {
+        return NO_MEMORY;
     }
 
+    *res = (int*)malloc(sizeof(int) * cnt);
+    if (*res == NULL) {
+        return NO_MEMORY;
+    }
+
+    int id_info = 0;
     for (int i = 0; i < cnt; i++) {
         const char* ptr = va_arg(args, const char*);
 
         FILE* fptr = fopen(ptr, "r");
 
         if (fptr == NULL) {
-            printf("lol didnt read: %s \n", ptr);
-            res[i] = INVALID_INPUT;
+            (*res)[i] = FILE_NOT_OPEN;
             continue;
         }
+        
+        char* line = NULL;
+        size_t len = 0;
+        int cnt_all = 0, cnt = 0;
+        int line_number = 1;
 
-        printf("Occurences in file %s:\n", ptr);
+        while (getline(&line, &len, fptr) != -1) {
+            char* line_ptr = line;
+            int line_len = strlen(line);
+            int pattern_len = strlen(pattern);
 
-        char ch;
-        int cnt = 0, ind = 0, pattern_len = strlen(pattern), row = 1, col = 1;
-        while ((ch = fgetc(fptr)) != EOF) {
-            col++;
-            if (ch == '\n') {
-                row++;
-                col = 1;
-            }
-            if (ch == pattern[ind]) {
-                ind++;
-                if (ind == pattern_len) {
-                    cnt++;
-                    ind = 0;
-                    printf("%d %d\n", row, col - pattern_len + count_next_line(pattern));
+            for (int i = 0; i < line_len; i++) {
+                if (line_ptr[i] == pattern[0]) {
+                    bool match = 1;
+                    
+                    for (int j = 1; j < pattern_len && match; j++) {
+                        if (i + j >= line_len || line_ptr[i + j] != pattern[j]) {
+                            match = 0;
+                        }
+                    }
+
+                    if (match) {
+                        id_info++;
+                        cnt_all++;
+                        cnt++;
+
+                        if (id_info > capacity) {
+                            capacity *= 2;
+                            *info = (Data*)realloc(*info, sizeof(Data) * capacity);
+                            if (*info == NULL) {
+                                return NO_MEMORY;
+                            }
+                        }
+
+                        // printf("ZEROPROBLEM: id:%d %d %d\n", id_info, line_number, i + 1);
+
+                        (*info)[id_info - 1].row = line_number;
+                        (*info)[id_info - 1].column = i + 1;
+
+                        // printf("EQUAL:%s", line_ptr);
+                    }
                 }
-            } 
-            else {
-                ind = 0;
             }
+
+            line_number++;
         }
 
         fclose(fptr);
 
-        res[i] = cnt;
+        (*res)[i] = cnt;
     }
 
     va_end(args);
 
-    return res;
+    return OK;
 }
 
 int main() {
 
-    const char* pattern = " ";
+    const char* pattern = "\n";
     int file_cnt = 3;
 
-    int* res = count_pattern_in_files(pattern, file_cnt, "1.txt", "2.txt", "3.txt");
-    // int* res = count_pattern_in_files(pattern, file_cnt, "space.txt");
-    // int* res = count_pattern_in_files(pattern, file_cnt, "tab.txt");
-    // int* res = count_pattern_in_files(pattern, file_cnt, "next_line.txt");
+    Data* info;
 
+    int* res;
+
+    int status = count_pattern_in_files(&info, &res, pattern, file_cnt, "1.txt", "2.txt", "blank.txt");
+    if (status != OK) {
+        print_scs(status);
+        return status;
+    }
+    // count_pattern_in_files(pattern, file_cnt, "space.txt");
+    // count_pattern_in_files(pattern, file_cnt, "tab.txt");
+    // count_pattern_in_files(pattern, file_cnt, "next_line.txt");
+
+    int last = 0;
     for (int i = 0; i < file_cnt; i++) {
-        printf("Number of occurences of pattern \"%s\" in file #%d: ", pattern, i + 1);
-        if (res[i] != -1) {
-            printf("%d\n", res[i]);
+        printf("Number of occurences in the file №%d: %d\n", i + 1, res[i]);
+        if (res[i] != FILE_NOT_OPEN) {
+            for (int j = last; j < last + res[i]; j++) {
+                printf("%d %d\n", info[j].row, info[j].column);
+            }
+            last += res[i];
         }
         else {
-            printf("-\n");
+            print_scs(FILE_NOT_OPEN);
         }
     }
 
     free(res);
+    free(info);
 
     return 0;
 }
