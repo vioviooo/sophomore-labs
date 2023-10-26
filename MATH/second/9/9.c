@@ -10,6 +10,7 @@
 #include <complex.h>
 
 typedef long long ll;
+typedef long double ld;
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -26,7 +27,7 @@ enum status_codes {
     OVERLAP = -5
 };
 
-void print_scs(int choice) {
+void print_scs(ll choice) {
     switch(choice) {
         case INVALID_INPUT:
             printf("Invalid input.\n");
@@ -60,78 +61,17 @@ void print_scs(int choice) {
     }
 }
 
-/////////////////////// struct-related ///////////////////////////
-
-/////////////////////// validations ///////////////////////////
-
-bool is_valid_double(char ch[]) {
-    if (ch[0] == '.' || strlen(ch) == 1 || strlen(ch) == 2) {
-        return 0;
-    }
-
-    int i;
-    if (ch[0] == '-') {
-        i = 1;
-    } else {
-        i = 0;
-    }
-    
-    int cnt_dot = 0;
-    for (; ch[i] != '\0'; i++) {
-        if (ch[i] == '.') {
-            cnt_dot++;
-        }
-        else {
-            if (!isdigit(ch[i])) {
-                return 0;
-            }
-        }
-        if (cnt_dot > 1) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-// only positive bases are allowed
-bool is_valid_integer(char ch[]) {
-
-    if (ch[0] == '-') {
-        return 0;
-    }
-    
-    int i = 0;
-
-    while (ch[i] == '0') {
-        i++;
-    }
-
-    int prev = i;
-    if (strlen(ch) - i > 9) {
-        return 0;
-    }
-
-    for (; ch[i] != '\0'; i++) {
-        if (!isdigit(ch[i])) {
-            return 0;
-        }
-    }
-
-    return 1;
-}   
-
 ////////////////////main functions////////////////////////
 
-double get_eps() {
-    double eps = 1.0;
+ld get_eps() {
+    ld eps = 1.0;
     while (1.0 + eps / 2.0 > 1.0) {
         eps /= 2.0;
     }
     return eps;
 }
 
-int gcd(int a, int b) {
+ll gcd(ll a, ll b) {
     if (a == 0) {
         return b;
     }
@@ -140,11 +80,11 @@ int gcd(int a, int b) {
     }
 }
 
-bool is_prime(int n) {
+bool is_prime(ll n) {
     if (n <= 1) {
         return false;
     }
-    for (int i = 2; i * i <= n; i++) {
+    for (ll i = 2; i * i <= n; i++) {
         if (n % i == 0) {
             return false;
         }
@@ -152,18 +92,21 @@ bool is_prime(int n) {
     return true;
 }
 
-bool helper(int base, int p, int q) {
-    for (int i = 2; i <= q; i++) {
+bool helper(ll base, ll p, ll q) {
+    for (ll i = 2; i <= q; i++) {
         if (q % i == 0) {
             if (is_prime(i) && base % i != 0) {
                 return false;
             }
         }
+        // while (q % i == 0) {
+        //     q /= i;
+        // }
     }
     return true;
 }
 
-int is_finite_repr(bool** res, int base, int cnt, ...) {
+ll is_finite_repr(bool** res, ll base, ll cnt, ...) {
     if (base < 2 || base > 36 || cnt < 1) {
         return INVALID_INPUT;
     }
@@ -176,24 +119,28 @@ int is_finite_repr(bool** res, int base, int cnt, ...) {
     va_list args;
     va_start(args, cnt);
 
-    double eps = get_eps();
+    ld eps = 1e-9;
 
-    for (int i = 0; i < cnt; i++) {
-        double x = va_arg(args, double);
-        double elem = x;
+    for (ll i = 0; i < cnt; i++) {
+        ld x = va_arg(args, ld);
+        ld elem = x;
 
-        int p, q = 1; // numerator && denominator
-        while (elem > (int)elem) {
+        ll p, q = 1; // numerator && denominator
+        while (fabsl(elem - floor(elem)) > eps) {
             elem *= 10;
             q *= 10;
         }
 
-        p = (int)elem;
+        p = (ll)elem;
 
-        int gcd_ = gcd(p, q);
+        ll gcd_ = gcd(p, q);
+
+        printf("HERE: %lld %lld\n", p, q);
 
         p /= gcd_;
         q /= gcd_;
+
+        printf("HERE: %lld %lld\n", p, q);
 
         (*res)[i] = helper(base, p, q);
     }
@@ -207,32 +154,33 @@ int main(void) {
 
     printf("Welcome! This program will identify if certain fraction has a finite representation in the <base> pal system.\n");
     printf("Enter base: ");
-    char ch[BUFSIZ];
-
-    scanf("%s", ch);
-
-    if (!is_valid_integer(ch)) {
+    
+    ll base;
+    if (scanf("%lld", &base) != 1 || getchar() != '\n') {
         print_scs(INVALID_INPUT);
         return INVALID_INPUT;
     }
 
-    int base = atoi(ch);
-
     bool* res;
 
     // change input
-    int cnt = 5;
-    double num1 = 0.046875, num2 = 0.1, num3 = 0.25, num4 = 0.2, num5 = 0.3;
+    ll cnt = 5;
+
+    // ans : 0 0 1 1 1
+    ld num1 = 0.3, num2 = 0.1, num3 = 0.25, num4 = 0.125, num5 = 0.00006103515625;
+    
+    // correct : 1 1 1 1 1
+    // ld num1 = 0.0000152587890625, num2 = 0.000030517578125, num3 = 0.00006103515625, num4 = 0.0001220703125, num5 = 0.0009765625;
 
     // change accrodingly
-    int status = is_finite_repr(&res, base, cnt, num1, num2, num3, num4, num5);
+    ll status = is_finite_repr(&res, base, cnt, num1, num2, num3, num4, num5);
 
     if (status != OK) {
         print_scs(status);
         return status;
     }
 
-    for (int i = 0; i < cnt; i++) {
+    for (ll i = 0; i < cnt; i++) {
         printf("%d ", res[i]);
     }
     printf("\n");
