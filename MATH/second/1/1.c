@@ -47,23 +47,22 @@ void print_scs(int choice) {
 
 bool is_valid_flag(char ch[]) {
     int command_cnt = 5;
-    char commands[5] = {'l', 'r', 'u', 'n', 'c'};
+    char commands[5] = "lrunc";
 
-    int ind = -1;
-    if (ch[0] == '-') {
-        for (ll i = 0; i < command_cnt; i++) {
-            if (ch[1] == commands[i]) {
-                ind = i; // keep the index of the command we need to execute
-                break; // Exit the loop when a valid command is found
-            }
-        }
-    }
+    int len;
+    find_length(&len, ch);
 
-    if (ind == -1) {
+    if (ch[0] != '-' || len != 2) {
         return false;
     }
 
-    return true;
+    for (ll i = 0; i < command_cnt; i++) {
+        if (ch[1] == commands[i]) {
+            return true; // Exit the loop when a valid command is found
+        }
+    }
+
+    return false;
 }
 
 bool is_valid_integer(char ch[]) {
@@ -93,15 +92,15 @@ bool is_valid_integer(char ch[]) {
 }   
 
 bool is_alpha(char c) {
-    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) ? 1 : 0;
+    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 }
 
 bool is_lower(char c) {
-    return (c >= 'a' && c <= 'z') ? 1 : 0;
+    return (c >= 'a' && c <= 'z');
 }
 
 bool is_digit(char c) {
-    return (c >= '0' && c <= '9') ? 1 : 0;
+    return (c >= '0' && c <= '9');
 }
 
 ////////////////////main functions////////////////////////

@@ -121,11 +121,7 @@ int count_pattern_in_files(Data** info, int** res, const char* pattern, int cnt,
                     }
 
                     if (match) {
-                        id_info++;
-                        cnt_all++;
-                        cnt++;
-
-                        if (id_info > capacity) {
+                        if (id_info >= capacity) {
                             capacity *= 2;
                             *info = (Data*)realloc(*info, sizeof(Data) * capacity);
                             if (*info == NULL) {
@@ -133,20 +129,22 @@ int count_pattern_in_files(Data** info, int** res, const char* pattern, int cnt,
                             }
                         }
 
-                        // printf("ZEROPROBLEM: id:%d %d %d\n", id_info, line_number, i + 1);
+                        (*info)[id_info].row = line_number;
+                        (*info)[id_info].column = i + 1;
 
-                        (*info)[id_info - 1].row = line_number;
-                        (*info)[id_info - 1].column = i + 1;
 
-                        // printf("EQUAL:%s", line_ptr);
+                        id_info++;
+                        cnt_all++;
+                        cnt++;
+
                     }
                 }
             }
 
             line_number++;
-        }
 
-        free(line);
+            free(line);
+        }
 
         fclose(fptr);
 
