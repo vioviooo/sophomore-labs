@@ -16,6 +16,8 @@
         "numeric": "c",
         "stop_token": "c",
         "functional": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "shm.h": "c",
+        "string.h": "c"
     }
 }
