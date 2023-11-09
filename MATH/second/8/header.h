@@ -77,7 +77,7 @@ bool is_valid_base(int base, char ch[]) {
     return true; 
 }
 
-int add_in_base(char** ans, const char* num1, const char* num2, int radix, char** clear_me) {
+int add_in_base(char** ans, const char* num1, const char* num2, int base, char** clear_me) {
     int len1 = strlen(num1);
     int len2 = strlen(num2);
     int maxLen = (len1 > len2) ? len1 : len2;
@@ -98,9 +98,9 @@ int add_in_base(char** ans, const char* num1, const char* num2, int radix, char*
         int digit2 = (j >= 0) ? (isdigit(num2[j]) ? num2[j] - '0' : num2[j] - 'A' + 10) : 0;
 
         int sum = digit1 + digit2 + carry;
-        carry = sum / radix;
+        carry = sum / base;
 
-        result[--k] = (sum % radix < 10) ? (sum % radix) + '0' : (sum % radix) + 'A' - 10;
+        result[--k] = (sum % base < 10) ? (sum % base) + '0' : (sum % base) + 'A' - 10;
 
         if (i >= 0) i--;
         if (j >= 0) j--;
@@ -113,7 +113,7 @@ int add_in_base(char** ans, const char* num1, const char* num2, int radix, char*
         k++;
     }
 
-    *ans = &result[k];
+    *ans = result + k;
 
     return 1;
 }
@@ -137,8 +137,6 @@ int find_sum(char** res, int base, int cnt, ...) {
             elem++;
         }
 
-        printf("%s", elem);
-
         if (!is_valid_base(base, elem)) {
             return INVALID_BASE;
         }
@@ -151,9 +149,10 @@ int find_sum(char** res, int base, int cnt, ...) {
             return NO_MEMORY;
         }
 
-        *res = result;
-
-        printf("HERE:%s\n", result);
+        char *result_copied = (char *)malloc(sizeof(char) * (strlen(result) + 1));
+        // TODO: check malloc result
+        strcpy(result_copied, result);
+        *res = result_copied;
 
         free(clear_me);
     }
@@ -162,8 +161,5 @@ int find_sum(char** res, int base, int cnt, ...) {
 
     return OK;
 }
-
-
-
 
 #endif

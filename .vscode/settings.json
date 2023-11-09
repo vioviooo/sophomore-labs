@@ -18,6 +18,7 @@
         "functional": "c",
         "typeinfo": "c",
         "shm.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "ios": "c"
     }
 }

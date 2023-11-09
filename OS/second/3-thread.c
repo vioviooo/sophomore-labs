@@ -10,7 +10,7 @@
 #define NUM_FORKS 5
 
 pthread_t philosopher[NUM_PHILOSOPHERS + 1];
-pthread_mutex_t forks[NUM_FORKS + 1]; // <- семафоры
+pthread_mutex_t forks[NUM_FORKS + 1]; //
 
 void dine(int id) {
     int right_fork = (id + 1) % NUM_FORKS;

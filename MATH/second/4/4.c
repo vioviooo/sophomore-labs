@@ -9,7 +9,7 @@ int horner(double* res, double x0, int cnt, ...);
 int main(void) {
 
     printf("Welcome to the program! Choose the desired action:\n");
-    printf("1. Check if the figure is a rectangle [no input]\n2. Find power of a certain polynomial at a given point\n");
+    printf("1. Check if the figure is a rectangle [no input]\n2. Find the value of a certain polynomial at a given point\n");
 
     int choice;
     if (scanf("%d", &choice) != 1 || getchar() != '\n') {
@@ -48,11 +48,12 @@ int main(void) {
 
             double res = 0;
 
-            int power = 0;
+            // change accordingly
+            int power = 4;
             int cnt = power + 1;
 
-            // int status = horner(&res, 2.0 , cnt, 1.0, 3.0, 5.0, 7.0, 9.0);
-            int status = horner(&res, 2.0, cnt, 45.0);
+            int status = horner(&res, 1.0 , cnt, 1.0, 3.0, 5.0, 7.0, 9.0);
+            // int status = horner(&res, 2.0, cnt, 45.0);
 
             if (status!= OK) {
                 print_scs(status);

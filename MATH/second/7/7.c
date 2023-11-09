@@ -138,7 +138,6 @@ double another_function(double x) {
 
 typedef double (*foo)(double);
 
-// вывод енамо с сошибками + проверками жпсилон прямо внутри функции
 bool dichotomy(double a, double b, double EPS, foo this_function, double* res) {
     bool flag = true;
     double c = 0;

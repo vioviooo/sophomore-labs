@@ -135,12 +135,12 @@ ll is_finite_repr(bool** res, ll base, ll cnt, ...) {
 
         ll gcd_ = gcd(p, q);
 
-        printf("HERE: %lld %lld\n", p, q);
+        // printf("HERE: %lld %lld\n", p, q);
 
         p /= gcd_;
         q /= gcd_;
 
-        printf("HERE: %lld %lld\n", p, q);
+        // printf("HERE: %lld %lld\n", p, q);
 
         (*res)[i] = helper(base, p, q);
     }

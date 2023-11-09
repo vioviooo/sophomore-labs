@@ -181,6 +181,8 @@ int horner(double* res, double x0, int cnt, ...) {
 
     va_end(args);
 
+    free(vec);
+
     return OK;
 }
 
