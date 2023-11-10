@@ -169,7 +169,7 @@ int main(int argc, char* argv[]) {
     while (!feof(fptr)) {
         cnt++;
         if (cnt >= capacity) {
-            Employee* tmp = (Employee*)realloc(arr, 2 * capacity);
+            Employee* tmp = (Employee*)realloc(arr, sizeof(Employee) * (2 * capacity));
             if (tmp == NULL) { // realloc freed arr memory if != NULL
                 free(arr);
                 print_scs(NO_MEMORY);

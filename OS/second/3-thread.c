@@ -10,7 +10,7 @@
 #define NUM_FORKS 5
 
 pthread_t philosopher[NUM_PHILOSOPHERS + 1];
-pthread_mutex_t forks[NUM_FORKS + 1]; //
+pthread_mutex_t forks[NUM_FORKS + 1];
 
 void dine(int id) {
     int right_fork = (id + 1) % NUM_FORKS;
@@ -59,8 +59,8 @@ int main(void) {
 
     // initialize mutex array
     for (int i = 1; i <= NUM_FORKS; i++) {
-        int status = pthread_mutex_init(&forks[i], NULL); // в нем большие отрицательные числа
-        // Check if the mutex is initialised successfully
+        int status = pthread_mutex_init(&forks[i], NULL);
+        // check if the mutex is initialised successfully
         if (status == -1) {
             perror("Mutex initialization failed.\n");
             return 1;

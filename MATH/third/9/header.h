@@ -10,16 +10,17 @@
 #include <time.h>
 #include <math.h>
 #include <stdarg.h>
+#include <ncurses.h>
 #include <complex.h>
 
-enum status_codes {
-    OK = 1,
-    ERROR = -2,
-    INVALID_INPUT = 2,
-    NO_MEMORY = -1,
-    OVERFLOW_ = -3,
-    UNDEFINED = -4
-};
+// enum status_codes {
+//     OK = 1,
+//     ERROR = -2,
+//     INVALID_INPUT = 2,
+//     NO_MEMORY = -1,
+//     OVERFLOW_ = -3,
+//     UNDEFINED = -4
+// };
 
 int subtract(int x, int y);
 int add(int x, int y);
