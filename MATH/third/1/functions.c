@@ -41,13 +41,8 @@ void print_scs(int choice) {
 
 int subtract(int x, int y) {
     while (y != 0) {
-        // borrow contains common set bits of y and unset bits of x
-        int borrow = (~x) & y;
- 
-        // Subtraction of bits of x and y where at least one of the bits is not set
+        int borrow = (~x) & y; // contains common set bits of y and unset bits of x
         x = x ^ y;
- 
-        // Borrow is shifted by oneso that subtracting it from  x gives the required sum
         y = borrow << 1;
     }
     return x;
@@ -56,11 +51,7 @@ int subtract(int x, int y) {
 int add(int x, int y) {
     while (y != 0) {
         unsigned carry = x & y; // get common set bits of x and y
- 
-        // Sum of bits of x and y where at least one of the bits is not set
         x = x ^ y; 
- 
-        // Carry is shifted by one so that adding it to x gives the required sum
         y = carry << 1;
     }
     return x;
@@ -87,7 +78,7 @@ int decimal_to_base_2r(int num, int r, char** result) {
             *ptr = add(digit, '0');
         }
 
-        num >>= r; // Right-shift by 'r' bits to process the next digit
+        num >>= r; // Right-shift by 'r' bits to process next digit
     }
 
     *result = (char*)malloc(sizeof(char) * (strlen(ptr) + 1));

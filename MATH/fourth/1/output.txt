@@ -1,0 +1,3 @@
+#define apple banana
+#define apple ora-=-=-nge
+ora-=-=-nge    ora-=-=-nge app le ap ple

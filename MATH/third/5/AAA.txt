@@ -1,0 +1,12 @@
+printf("\nChoose your action:\n
+
+1. Sort the students.\n");
+2. Find a student.\n
+3. Output info about a student in a file.\n");
+4. Output students who have higher grade than mean in a file.\n");
+5. Exit\n");
+
+
+дедлайн 2-23 декабря
+2 теории 3 задачи
+функция вставка удаление поиск структуры фиб куча файлы

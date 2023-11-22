@@ -1,85 +1,80 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tree.c"
+#include "header.h"
 
-typedef struct TreeNode {
-    char data;
-    struct TreeNode* left;
-    struct TreeNode* right;
-} TreeNode;
+int main(int argc, char* argv[]) {
 
-TreeNode* createNode(char data) {
-    TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));
-    if (newNode) {
-        newNode->data = data;
-        newNode->left = newNode->right = NULL;
+    if (argc != 3) {
+        printf("Invalid input.\n");
+        return 1;
     }
-    return newNode;
-}
 
-int isOperator(char c) {
-    return (c == '+' || c == '-' || c == '*' || c == '/');
-}
+    if (*argv[1] == *argv[2]) {
+        printf("The files for input and output are the same.\n");
+        return 1;
+    }
 
-void buildExpressionTree(TreeNode** root, char* expression, int* index) {
-    if (expression[*index] == '(') {
-        (*index)++; // Skip the opening parenthesis
-        *root = createNode(expression[*index]);
-        (*index)++; // Move to the next character
+    char* file_input = argv[1];
+    FILE* fptr_in = fopen(file_input, "r");
+    if (!fptr_in) {
+        return 1;
+    }
 
-        if (isOperator((*root)->data)) {
-            buildExpressionTree(&(*root)->left, expression, index);
-            buildExpressionTree(&(*root)->right, expression, index);
+    char* file_output = argv[2];
+    FILE* fptr_out = fopen(file_output, "w");
+    if (!fptr_out) {
+        fclose(fptr_in);
+        return 1;
+    }
+
+    int capacity = 2, cnt_sym = 0;
+    char* seq = (char*)calloc(capacity, sizeof(char));
+    if (seq == NULL) {
+        return NO_MEMORY;
+    }
+
+    struct Node* root = NULL;
+
+    char c;
+    while ((c = fgetc(fptr_in)) != EOF) {
+        if (c == '\n') {
+            if (strlen(seq) != 0) {
+                root = bracket_to_tree(seq);
+                print_tree(root, 0, fptr_out);
+                fprintf(fptr_out, "\n\n");
+            }
+            for (int i = 0; i < capacity; i++) {
+                seq[i] = '\0';
+            }
+            cnt_sym = 0;
         }
-    } else {
-        // If it's not an opening parenthesis, it's an operand or a closing parenthesis
-        while (expression[*index] != ',' && expression[*index] != ')' && expression[*index] != '\0') {
-            (*index)++;
+        else {
+            if (cnt_sym >= capacity - 1) {
+                capacity *= 2;
+                char* tmp = (char*)realloc(seq, (capacity + 1) * sizeof(char));
+                if (tmp == NULL) {
+                    free(seq);
+                    return NO_MEMORY;
+                }
+                seq = tmp;
+                seq[cnt_sym] = '\0';
+            }
+            seq[cnt_sym] = c;
+            cnt_sym++;
         }
     }
 
-    if (expression[*index] == ',') {
-        (*index)++;
+    if (strlen(seq) != 0) {
+        root = bracket_to_tree(seq);
+        print_tree(root, 0, fptr_out);
     }
 
-    if (expression[*index] == ')') {
-        (*index)++; // Skip the closing parenthesis
-    }
-}
+    free_tree(root);
 
-void printExpressionTree(TreeNode* root) {
-    if (root) {
-        if (isOperator(root->data)) {
-            printf("(");
-        }
-        printExpressionTree(root->left);
-        printf("%c", root->data);
-        printExpressionTree(root->right);
-        if (isOperator(root->data)) {
-            printf(")");
-        }
-    }
-}
-
-void freeExpressionTree(TreeNode* root) {
-    if (root) {
-        freeExpressionTree(root->left);
-        freeExpressionTree(root->right);
-        free(root);
-    }
-}
-
-int main() {
-    char expression[] = "A (B (E (G, T, R (W, Z)), F (L, M)), C)";
-    int index = 0;
-    TreeNode* root = NULL;
-
-    buildExpressionTree(&root, expression, &index);
-    printf("Expression tree: ");
-    printExpressionTree(root);
-    printf("\n");
-
-    freeExpressionTree(root);
+    fclose(fptr_in);
+    fclose(fptr_out);
 
     return 0;
 }
