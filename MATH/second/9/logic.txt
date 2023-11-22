@@ -1,1 +1,2 @@
 https://math.stackexchange.com/questions/694981/what-makes-a-floating-point-number-finite
+https://ejudge.179.ru/tasks/cpp/theory/20-float.html

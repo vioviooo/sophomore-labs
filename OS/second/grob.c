@@ -5,6 +5,8 @@
 #include <sys/wait.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
+#include <sys/shm.h>
+
 
 #define N 5
 #define LEFT (i + N - 1) % N
@@ -54,7 +56,7 @@ int main() {
     int semid;
     
     // Create semaphore set
-    semid = semget(IPC_PRIVATE, N, 0666 | IPC_CREAT);
+    semid = semget(IPC_PRIVATE, N, 0666 | IPC_CREAT); // чекнуть
     if (semid < 0) {
         perror("semget");
         exit(1);

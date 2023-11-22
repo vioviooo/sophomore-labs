@@ -86,6 +86,8 @@ int count_pattern_in_files(Data** info, int** res, const char* pattern, int cnt,
 
     *res = (int*)malloc(sizeof(int) * cnt);
     if (*res == NULL) {
+        free(*info);
+        *info = NULL;
         return NO_MEMORY;
     }
 
@@ -127,10 +129,15 @@ int count_pattern_in_files(Data** info, int** res, const char* pattern, int cnt,
 
                         if (id_info > capacity) {
                             capacity *= 2;
-                            *info = (Data*)realloc(*info, sizeof(Data) * capacity);
-                            if (*info == NULL) {
+                            Data* tmp;
+                            tmp = (Data*)realloc(*info, sizeof(Data) * capacity);
+
+                            if (tmp == NULL) {
+                                free(info);
                                 return NO_MEMORY;
                             }
+
+                            *info = tmp;
                         }
 
                         // printf("ZEROPROBLEM: id:%d %d %d\n", id_info, line_number, i + 1);
@@ -160,14 +167,14 @@ int count_pattern_in_files(Data** info, int** res, const char* pattern, int cnt,
 
 int main() {
 
-    const char* pattern = "\n";
+    const char* pattern = "";
     int file_cnt = 3;
 
     Data* info;
 
     int* res;
 
-    int status = count_pattern_in_files(&info, &res, pattern, file_cnt, "1.txt", "2.txt", "blank.txt");
+    int status = count_pattern_in_files(&info, &res, pattern, file_cnt, "1.txt", "2.txt", "4.txt");
     if (status != OK) {
         print_scs(status);
         return status;

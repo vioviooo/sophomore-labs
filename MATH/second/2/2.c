@@ -26,7 +26,7 @@ int main(void) {
     switch(choice) {
         case 1: {
             double res = 0.0;
-            int status = geometric_mean(&res, 3, 1.0, 1.0, 1.0);
+            int status = geometric_mean(&res, 3, 1.0, -1.0, 1.0);
             if (status != OK && status != WARNING_UNUSED) {
                 print_scs(status);
                 exit(status);

@@ -46,17 +46,13 @@ void print_scs(int choice) {
 /////////////////////// validations ///////////////////////////
 
 bool is_valid_flag(char ch[]) {
-    int command_cnt = 5;
-    char commands[5] = "lrunc";
+    char commands[] = "lrunc";
 
-    int len;
-    find_length(&len, ch);
-
-    if (ch[0] != '-' || len != 2) {
+    if (ch[0] != '-' || ch[2] != '\0') {
         return false;
     }
 
-    for (ll i = 0; i < command_cnt; i++) {
+    for (int i = 0; commands[i] != '\0'; i++) {
         if (ch[1] == commands[i]) {
             return true; // Exit the loop when a valid command is found
         }
@@ -105,6 +101,12 @@ bool is_digit(char c) {
 
 ////////////////////main functions////////////////////////
 
+void find_length(int* res, char ch[]) {
+    for (int i = 0; ch[i] != '\0'; i++) {
+        (*res)++;
+    }
+}
+
 int duplicate_string(char initial[], int len, char** new) {
     *new = (char*)malloc(sizeof(char) * (len + 1));
     if (*new == NULL) {
@@ -118,12 +120,6 @@ int duplicate_string(char initial[], int len, char** new) {
     (*new)[len] = '\0';
 
     return OK;
-}
-
-void find_length(int* res, char ch[]) {
-    for (int i = 0; ch[i] != '\0'; i++) {
-        (*res)++;
-    }
 }
 
 int reverse_string(char** st, char argv[]) {
