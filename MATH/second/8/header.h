@@ -150,7 +150,10 @@ int find_sum(char** res, int base, int cnt, ...) {
         }
 
         char *result_copied = (char *)malloc(sizeof(char) * (strlen(result) + 1));
-        // TODO: check malloc result
+        if (result_copied == NULL) {
+            printf("ERROR: NO MEMORY");
+            exit(1);
+        }
         strcpy(result_copied, result);
         *res = result_copied;
 

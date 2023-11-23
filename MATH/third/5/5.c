@@ -81,7 +81,6 @@ enum choices {
     GROUP = 4
 };
 
-// TODO 30 38 45
 ////////////////////////////////////////////////////////////////////////////////
 
 int cmp_id(const void *a, const void *b) {
@@ -250,7 +249,7 @@ int main(int argc, char* argv[]) {
         uch* grades = (uch*)malloc(num_exam * sizeof(uch));
         int sum_grades = 0;
         for (int i = 0; i < num_exam; i++) {
-            if (fscanf(fptr, "%hhu", &grades[i]) != 1) { // TODO check if there are digits only
+            if (fscanf(fptr, "%hhu", &grades[i]) != 1) { 
                 free(grades);
                 clean_me(fptr, arr, cnt);
                 print_scs(INVALID_INPUT_FILE);
