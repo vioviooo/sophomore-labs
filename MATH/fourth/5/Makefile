@@ -3,13 +3,13 @@ CC = gcc
 # FLAGS = -Wall -Wextra -Werror
 FLAGS = -Wall
 
-all: ../build/graph
+all: ../build/5
 
-../build/graph: graph.o stack.o stack_double.o
-	$(CC) $(FLAGS) graph.o stack.o stack_double.o -o ../build/graph
+../build/5: main.o stack.o stack_double.o
+	$(CC) $(FLAGS) main.o stack.o stack_double.o -o ../build/5
 
-graph.o: graph.c graph.h
-	$(CC) $(FLAGS) -c graph.c
+main.o: main.c main.h
+	$(CC) $(FLAGS) -c main.c
 
 stack.o: stack.c stack.h
 	$(CC) $(FLAGS) -c stack.c
@@ -19,9 +19,9 @@ stack_double.o: stack_double.c stack_double.h
 
 clean:
 	rm -rf *.o
-	rm -rf ../build/graph
+	rm -rf ../build/5
 
 out:
-	../build/graph
+	../build/5
 
 rebuild: clean all

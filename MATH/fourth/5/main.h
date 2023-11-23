@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef MAIN_H
+#define MAIN_H
 #include <math.h>
 #include <stdio.h>
 #include <string.h>

@@ -1,4 +1,4 @@
-#include "graph.h"
+#include "main.h"
 
 #include <stdbool.h>
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
             free(postfix_expression);
             free(infix_expression);
-            infix_expression = NULL;
+            // infix_expression = NULL;
         }
         fclose(fptr);
         i++;
