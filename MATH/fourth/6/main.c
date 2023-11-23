@@ -7,19 +7,16 @@
 
 #include "stack.h"
 
-// Structure for a tree node
-typedef struct TreeNode {
+typedef struct Node {
     char data;
-    struct TreeNode *left;
-    struct TreeNode *right;
-} TreeNode;
+    struct Node *left;
+    struct Node *right;
+} Node;
 
-// Function to check if a character is an operand
 int isOperand(char c) { return (c == '0' || c == '1'); }
 
-// Function to create a new tree node
-TreeNode *createNode(char data) {
-    TreeNode *newNode = (TreeNode *)malloc(sizeof(struct TreeNode));
+Node *createNode(char data) {
+    Node *newNode = (Node *)malloc(sizeof(struct Node));
     if (newNode == NULL) {
         printf("ERROR: Memory allocation failed\n");
         exit(1);
@@ -29,13 +26,31 @@ TreeNode *createNode(char data) {
     return newNode;
 }
 
-// Function to build a binary expression tree from a postfix expression
-TreeNode *buildExpressionTree(char postfix[]) {
-    TreeNode *stack[100];
+Node *copyTree(Node *original, char *values, int *index) {
+    if (original == NULL) {
+        return NULL;
+    }
+
+    Node *newNode = createNode(original->data);
+
+    newNode->left = copyTree(original->left, values, index);
+
+    if (isalpha(original->data)) {
+        newNode->data = values[*index];
+        (*index)++;
+    }
+
+    newNode->right = copyTree(original->right, values, index);
+
+    return newNode;
+}
+
+Node *buildExpressionTree(char postfix[]) {
+    Node *stack[BUFSIZ];
     int top = -1;
 
     for (int i = 0; postfix[i] != '\0'; ++i) {
-        TreeNode *newNode = createNode(postfix[i]);
+        Node *newNode = createNode(postfix[i]);
 
         if (isOperand(postfix[i]) || isalpha(postfix[i])) {
             stack[++top] = newNode;
@@ -49,8 +64,7 @@ TreeNode *buildExpressionTree(char postfix[]) {
     return stack[top];
 }
 
-// Function to evaluate an expression tree
-int evaluateExpressionTree(TreeNode *root) {
+int evaluateExpressionTree(Node *root) {
     if (root == NULL) {
         return 0;
     }
@@ -64,23 +78,23 @@ int evaluateExpressionTree(TreeNode *root) {
 
     switch (root->data) {
         case '&':
-            return (leftValue && rightValue);  // good
+            return (leftValue && rightValue);
         case '|':
-            return (leftValue || rightValue);  // good
+            return (leftValue || rightValue);
         case '~':
-            return !rightValue;  // good
+            return !rightValue;
         case '-':
-            return !leftValue || rightValue;  // good
+            return !leftValue || rightValue;
         case '+':
-            return (leftValue && !rightValue);  // good
+            return (leftValue && !rightValue);
         case '<':
-            return (leftValue ^ rightValue);  // good
+            return (leftValue ^ rightValue);
         case '=':
-            return leftValue == rightValue;  // good
+            return leftValue == rightValue;
         case '!':
-            return !leftValue && !rightValue;  // good
+            return !leftValue && !rightValue;
         case '?':
-            return !(leftValue || rightValue);  // good
+            return !(leftValue || rightValue);
         default:
             return false;
     }
@@ -185,28 +199,15 @@ void infixToPostfix(char *infix, char *postfix) {
     destroy(stack);
 }
 
-void createTruthTable(TreeNode *root, char *variables, int numVariables) {
-    printf("Truth Table:\n");
-
-    // Print column headers
-    for (int i = 0; i < numVariables; ++i) {
-        printf("%c\t", variables[i]);
-    }
-    printf("Result\n");
-
-    int numRows = 1 << numVariables;
-
-    for (int i = 0; i < numRows; ++i) {
-        for (int j = 0; j < numVariables; ++j) {
-            int value = (i >> j) & 1;
-            printf("%d\t", value);
-        }
-        int result = evaluateExpressionTree(root);
-        printf("%d\n", result);
+void inorderTraversal(Node *root) {
+    if (root != NULL) {
+        inorderTraversal(root->left);
+        printf("%c ", root->data);
+        inorderTraversal(root->right);
     }
 }
 
-void freeTree(TreeNode *root) {
+void freeTree(Node *root) {
     if (root == NULL) {
         return;
     }
@@ -215,11 +216,43 @@ void freeTree(TreeNode *root) {
     free(root);
 }
 
+void createTruthTable(Node *root, char *variables, int numVariables) {
+    printf("~TABLE OF TRUTH~\n");
+
+    for (int i = 0; i < numVariables; ++i) {
+        printf("%c\t", variables[i]);
+    }
+    printf("Result\n");
+
+    int numRows = 1 << numVariables;
+
+    char *curr_values = (char *)malloc(numVariables * sizeof(char));
+
+    for (int i = 0; i < numRows; ++i) {
+        for (int j = 0; j < numVariables; ++j) {
+            int value = (i >> j) & 1;
+            curr_values[j] = value + '0'; 
+            printf("%d\t", value);
+        }
+
+        int ind = 0;
+        Node *new_root = copyTree(root, curr_values, &ind);
+
+        int result = evaluateExpressionTree(new_root);
+        printf("%d\n", result);
+
+        freeTree(new_root);
+    }
+    free(curr_values);
+}
+
 int main(int argc, char *argv[]) {
     if (argc == 1) {
         printf("ERROR: TOO FEW ARGUMENTS");
         exit(1);
     }
+
+    // TODO: add more tests
 
     int i = 1;
     while (argv[i] != NULL) {
@@ -235,9 +268,22 @@ int main(int argc, char *argv[]) {
         char *infix_expression = NULL;
         int flag = 0, count = 1;
         count = input(fptr, &infix_expression);
+
+        // TODO: validate
         // if (!validateInfixExpression(infix_expression)) {
         //     flag = 1;
         // }
+
+        // FIXME: fix empty string segfault
+
+        char vars[BUFSIZ];
+        int idx = 0;
+        for (int i = 0; i < count; i++) {
+            if (isalpha(infix_expression[i])) {
+                vars[idx] = infix_expression[i];
+                idx++;
+            }
+        }
 
         char *postfix_expression = (char *)malloc((count + 1) * sizeof(char));
         if (postfix_expression == NULL) {
@@ -249,22 +295,18 @@ int main(int argc, char *argv[]) {
 
         if (flag == 0) {
             infixToPostfix(infix_expression, postfix_expression);
-            printf("%s\n", infix_expression);
-            printf("%s\n", postfix_expression);
+            printf("Infix:   %s\n", infix_expression);
+            printf("Postfix: %s\n", postfix_expression);
 
-            TreeNode *root = buildExpressionTree(postfix_expression);
+            Node *root = buildExpressionTree(postfix_expression);
 
-            printf("Expression Tree built successfully!\n");
-
-            // Extract variables from the infix expression
             int numVariables = 0;
             for (int i = 0; infix_expression[i] != '\0'; ++i) {
                 if (isalpha(infix_expression[i]) && !isOperator(infix_expression[i])) {
                     numVariables++;
                 }
             }
-
-            createTruthTable(root, infix_expression, numVariables);
+            createTruthTable(root, vars, numVariables);
             freeTree(root);
         }
 
