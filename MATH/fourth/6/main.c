@@ -1,8 +1,10 @@
+#include "main.h"
+
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
+
 #include "stack.h"
 
 // Structure for a tree node
@@ -35,7 +37,7 @@ TreeNode *buildExpressionTree(char postfix[]) {
     for (int i = 0; postfix[i] != '\0'; ++i) {
         TreeNode *newNode = createNode(postfix[i]);
 
-        if (isOperand(postfix[i])) {
+        if (isOperand(postfix[i]) || isalpha(postfix[i])) {
             stack[++top] = newNode;
         } else {
             newNode->right = stack[top--];
@@ -48,7 +50,7 @@ TreeNode *buildExpressionTree(char postfix[]) {
 }
 
 // Function to evaluate an expression tree
-int evaluateExpressionTree(TreeNode* root) {
+int evaluateExpressionTree(TreeNode *root) {
     if (root == NULL) {
         return 0;
     }
@@ -62,21 +64,21 @@ int evaluateExpressionTree(TreeNode* root) {
 
     switch (root->data) {
         case '&':
-            return leftValue && rightValue;  // good
+            return (leftValue && rightValue);  // good
         case '|':
-            return leftValue || rightValue;  // good
+            return (leftValue || rightValue);  // good
         case '~':
             return !rightValue;  // good
         case '-':
             return !leftValue || rightValue;  // good
         case '+':
-            return leftValue && !rightValue;  // good
+            return (leftValue && !rightValue);  // good
         case '<':
-            return leftValue ^ rightValue;  // good
+            return (leftValue ^ rightValue);  // good
         case '=':
             return leftValue == rightValue;  // good
         case '!':
-            return !(leftValue && rightValue);  // good
+            return !leftValue && !rightValue;  // good
         case '?':
             return !(leftValue || rightValue);  // good
         default:
@@ -84,9 +86,10 @@ int evaluateExpressionTree(TreeNode* root) {
     }
 }
 
-void generateTruthTable(TreeNode* root, char* variables, int numVariables);
-
-int isOperator(char c) { return (c == '+' || c == '-' || c == '<' || c == '=' || c == '|' || c == '~' || c == '!' || c == '?' || c == '&'); }
+int isOperator(char c) {
+    return (c == '+' || c == '-' || c == '<' || c == '=' || c == '|' || c == '~' || c == '!' || c == '?' ||
+            c == '&');
+}
 
 int input(FILE *fptr, char **infix_expression) {
     int i = 0, capacity = 2;
@@ -182,6 +185,27 @@ void infixToPostfix(char *infix, char *postfix) {
     destroy(stack);
 }
 
+void createTruthTable(TreeNode *root, char *variables, int numVariables) {
+    printf("Truth Table:\n");
+
+    // Print column headers
+    for (int i = 0; i < numVariables; ++i) {
+        printf("%c\t", variables[i]);
+    }
+    printf("Result\n");
+
+    int numRows = 1 << numVariables;
+
+    for (int i = 0; i < numRows; ++i) {
+        for (int j = 0; j < numVariables; ++j) {
+            int value = (i >> j) & 1;
+            printf("%d\t", value);
+        }
+        int result = evaluateExpressionTree(root);
+        printf("%d\n", result);
+    }
+}
+
 void freeTree(TreeNode *root) {
     if (root == NULL) {
         return;
@@ -227,17 +251,23 @@ int main(int argc, char *argv[]) {
             infixToPostfix(infix_expression, postfix_expression);
             printf("%s\n", infix_expression);
             printf("%s\n", postfix_expression);
-            
-            TreeNode* root = buildExpressionTree(postfix_expression);
+
+            TreeNode *root = buildExpressionTree(postfix_expression);
 
             printf("Expression Tree built successfully!\n");
 
-            int result = evaluateExpressionTree(root);
+            // Extract variables from the infix expression
+            int numVariables = 0;
+            for (int i = 0; infix_expression[i] != '\0'; ++i) {
+                if (isalpha(infix_expression[i]) && !isOperator(infix_expression[i])) {
+                    numVariables++;
+                }
+            }
 
-            printf("Result of the expression: %d\n", result);
-
+            createTruthTable(root, infix_expression, numVariables);
             freeTree(root);
         }
+
         free(postfix_expression);
         free(infix_expression);
         fclose(fptr);
