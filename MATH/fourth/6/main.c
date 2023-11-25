@@ -13,6 +13,30 @@ typedef struct Node {
     struct Node *right;
 } Node;
 
+enum status_codes { OK = 1, NO_MEMORY = -1, INVALID_INFIX = 2, UNBALANCED_BRACKETS = 3, EMPTY_FILE = -2 };
+
+void print_scs(int choice) {
+    switch (choice) {
+        case INVALID_INFIX:
+            printf("\nERROR: INVALID INFIX EXPRESSION\n");
+            break;
+        case OK:
+            printf("\nProject finished successfully!\n");
+            break;
+        case NO_MEMORY:
+            printf("\nERROR: NO MEMORY\n");
+            break;
+        case UNBALANCED_BRACKETS:
+            printf("\nERROR: UNBALANCED PARENTHESES\n");
+            break;
+        case EMPTY_FILE:
+            printf("\nNOTICE: EMPTY FILE\n");
+            break;
+        default:
+            break;
+    }
+}
+
 int isOperand(char c) { return (c == '0' || c == '1'); }
 
 Node *createNode(char data) {
@@ -231,7 +255,7 @@ void createTruthTable(Node *root, char *variables, int numVariables) {
     for (int i = 0; i < numRows; ++i) {
         for (int j = 0; j < numVariables; ++j) {
             int value = (i >> j) & 1;
-            curr_values[j] = value + '0'; 
+            curr_values[j] = value + '0';
             printf("%d\t", value);
         }
 
@@ -244,6 +268,59 @@ void createTruthTable(Node *root, char *variables, int numVariables) {
         freeTree(new_root);
     }
     free(curr_values);
+}
+
+int areParenthesesBalanced(char *exp) {
+    int flag = 1;
+    object *stack = NULL;
+    for (int i = 0; exp[i]; i++) {
+        if (exp[i] == '(') {
+            stack = push(stack, exp[i]);
+        } else if (exp[i] == ')') {
+            if (stack == NULL || stack->oper != '(') flag = 0;
+            stack = pop(stack);
+        }
+    }
+    if (stack != NULL) flag = 0;
+
+    while (stack != NULL) {
+        stack = pop(stack);
+    }
+    return flag;
+}
+
+int validateInfixExpression(char *infix) {
+    int i = 0;
+    while (infix[i] != '\0') {
+        if (isOperand(infix[i]) || isalpha(infix[i])) {
+            if (isOperand(infix[i + 1]) ||
+                (!isOperator(infix[i + 1]) && infix[i + 1] != ')' && infix[i + 1] != '\0')) {
+                printf("1");
+                return INVALID_INFIX;
+            }
+        } else if (isOperator(infix[i])) {
+            if ((infix[i] == '-' || infix[i] == '+' || infix[i] == '<') && infix[i + 1] != '>') {
+                printf("2");
+                return INVALID_INFIX;
+            } else if ((!(infix[i] == '-' || infix[i] == '+' || infix[i] == '<') &&
+                        !isOperand(infix[i + 1]) && !isalpha(infix[i + 1]) && infix[i + 1] != '(') ||
+                       infix[i + 1] == '\0') {
+                printf("3");
+                return INVALID_INFIX;
+            }
+        } else if (strchr("01&|~-+><!?()\n", infix[i]) == NULL && !isalpha(infix[i])) {
+            printf("4");
+            return INVALID_INFIX;
+        }
+        i++;
+    }
+    if (i == 0) {
+        return EMPTY_FILE;
+    }
+    if (!areParenthesesBalanced(infix)) {
+        return UNBALANCED_BRACKETS;
+    }
+    return OK;
 }
 
 int main(int argc, char *argv[]) {
@@ -260,7 +337,7 @@ int main(int argc, char *argv[]) {
 
         FILE *fptr = fopen(argv[i], "r");
         if (fptr == NULL) {
-            printf("ERROR: CAN'T OPEN FILE");
+            printf("ERROR: CAN'T OPEN FILE\n");
             i++;
             continue;
         }
@@ -269,49 +346,47 @@ int main(int argc, char *argv[]) {
         int flag = 0, count = 1;
         count = input(fptr, &infix_expression);
 
-        // TODO: validate
-        // if (!validateInfixExpression(infix_expression)) {
-        //     flag = 1;
-        // }
-
-        // FIXME: fix empty string segfault
-
-        char vars[BUFSIZ];
-        int idx = 0;
-        for (int i = 0; i < count; i++) {
-            if (isalpha(infix_expression[i])) {
-                vars[idx] = infix_expression[i];
-                idx++;
-            }
-        }
-
-        char *postfix_expression = (char *)malloc((count + 1) * sizeof(char));
-        if (postfix_expression == NULL) {
-            printf("ERROR: NO MEMORY\n");
-            free(infix_expression);
-            exit(1);
-        }
-        postfix_expression[count] = '\0';
-
-        if (flag == 0) {
-            infixToPostfix(infix_expression, postfix_expression);
-            printf("Infix:   %s\n", infix_expression);
-            printf("Postfix: %s\n", postfix_expression);
-
-            Node *root = buildExpressionTree(postfix_expression);
-
-            int numVariables = 0;
-            for (int i = 0; infix_expression[i] != '\0'; ++i) {
-                if (isalpha(infix_expression[i]) && !isOperator(infix_expression[i])) {
-                    numVariables++;
+        int status;
+        if ((status = validateInfixExpression(infix_expression)) != 1) {  //
+            print_scs(status);
+        } else {
+            char vars[BUFSIZ];
+            int idx = 0;
+            for (int j = 0; j < count; j++) {
+                if (isalpha(infix_expression[j])) {
+                    vars[idx] = infix_expression[j];
+                    idx++;
                 }
             }
-            createTruthTable(root, vars, numVariables);
-            freeTree(root);
-        }
 
-        free(postfix_expression);
-        free(infix_expression);
+            char *postfix_expression = (char *)malloc((count + 1) * sizeof(char));
+            if (postfix_expression == NULL) {
+                printf("ERROR: NO MEMORY\n");
+                free(infix_expression);
+                exit(1);
+            }
+            postfix_expression[count] = '\0';
+
+            if (flag == 0) {
+                infixToPostfix(infix_expression, postfix_expression);
+                printf("Infix:   %s\n", infix_expression);
+                printf("Postfix: %s\n", postfix_expression);
+
+                Node *root = buildExpressionTree(postfix_expression);
+
+                int numVariables = 0;
+                for (int j = 0; infix_expression[j] != '\0'; j++) {
+                    if (isalpha(infix_expression[j]) && !isOperator(infix_expression[j])) {
+                        numVariables++;
+                    }
+                }
+                createTruthTable(root, vars, numVariables);
+                freeTree(root);
+            }
+
+            free(postfix_expression);
+            free(infix_expression);
+        }
         fclose(fptr);
         i++;
     }
