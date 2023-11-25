@@ -15,6 +15,13 @@ clean:
 	rm -rf *.o
 	rm -rf ../build/2
 
+beauty:
+	clang-format -i *.c
+	clang-format -i *.h
+
+analyze:
+	cppcheck --enable=all --suppress=missingIncludeSystem *.c
+
 out:
 	../build/2
 

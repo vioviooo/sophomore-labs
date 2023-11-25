@@ -1,67 +1,4 @@
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#define MAX_ARRAY_NAME 1
-#define MAX_FILENAME 256
-#define MAX_COMMAND_LENGTH 300
-#define LETTERS_COUNT 26
-
-enum status_codes { OK = 1, ERROR = -2, INVALID_INPUT = 2, NO_MEMORY = -1, OVERFLOW_ = -3, UNDEFINED = -4 };
-
-void print_scs(int choice) {
-    switch (choice) {
-        case INVALID_INPUT:
-            printf("\nERROR: INVALID INPUT\n");
-            break;
-        case OK:
-            printf("\nProject finished successfully!\n");
-            break;
-        case NO_MEMORY:
-            printf("\nERROR: NO MEMORY\n");
-            break;
-        case OVERFLOW_:
-            printf("\nERROR: OVERFLOW\n");
-            break;
-        case UNDEFINED:
-            printf("\nError! What you're trying to calculate IS UNDEFINED or uses complex numbers.\n");
-            break;
-        default:
-            break;
-    }
-}
-
-typedef struct {
-    int size;
-    int maxInd;
-    int maxVal;
-    int minVal;
-    int minInd;
-    int mostFrequent;
-    double average;
-    int maxDeviation;
-} Stats;
-
-int loadArr(int array[], int* size, const char* filename);
-int saveArr(const int array[], int size, const char* filename);
-int randomArr(int array[], int size, int lb, int rb);
-int concatArrs(int dest[], int* destSize, const int src[], int srcSize);
-int freeArray(int array[], int* size);
-int removeElems(int array[], int* size, int startIdx, int numElements);
-int copyElems(const int src[], int srcSize, int dest[], int* destSize, int startIdx, int endIdx);
-void shuffleArr(int array[], int size);
-Stats calcStats(const int array[], int size);
-
-int compareAsc(const void* a, const void* b) { return (*(int*)a - *(int*)b); }
-int compareDesc(const void* a, const void* b) { return (*(int*)b - *(int*)a); }
-int compareShuffle() { return rand() % 3 - 1; }
-
-void printAll(const int array[], int size);
-int printRange(const int array[], int size, int start, int end);
-void printElement(const int array[], int size, int index);
+#include "main.h"
 
 int main() {
     int arrays[LETTERS_COUNT][BUFSIZ];
@@ -78,7 +15,6 @@ int main() {
         printf("Enter command: ");
         fgets(command, MAX_COMMAND_LENGTH, stdin);
         // TODO:check return values from functions and print errors if necessary
-        // TODO: invalid strings in the input file
         // FIXME: sscanf doesn't react when ; is absent
         if (sscanf(command, "load %c, %255[^;];\n", &arr1, filename) == 2 && isalpha(arr1)) {
             printf("HEERRE:%s\n", filename);
@@ -92,8 +28,8 @@ int main() {
             arraySizes[toupper(arr1) - 'A'] = count;
             printf("Array %c filled with %d random elements between %d and %d\n", arr1, count, lb, rb);
         } else if (sscanf(command, "concat %c, %c;", &arr1, &arr2) == 2 && isalpha(arr1) && isalpha(arr2)) {
-            concatArrs(arrays[toupper(arr1) - 'A'], &arraySizes[toupper(arr1) - 'A'],
-                         arrays[arr2 - 'A'], arraySizes[arr2 - 'A']);
+            concatArrs(arrays[toupper(arr1) - 'A'], &arraySizes[toupper(arr1) - 'A'], arrays[arr2 - 'A'],
+                       arraySizes[arr2 - 'A']);
             printf("Arrays %c and %c concatenated\n", arr1, arr2);
         } else if (sscanf(command, "free %c;", &arr1) == 1 && isalpha(arr1)) {
             freeArray(arrays[toupper(arr1) - 'A'], &arraySizes[toupper(arr1) - 'A']);
@@ -102,17 +38,15 @@ int main() {
             removeElems(arrays[toupper(arr1) - 'A'], &arraySizes[toupper(arr1) - 'A'], lb, rb);
             printf("%d elements removed from array %c starting from index %d\n", rb, arr1, lb);
         } else if (sscanf(command, "copy %c, %d, %d, %c;", &arr1, &lb, &rb, &arr2) == 4 && isalpha(arr1)) {
-            copyElems(arrays[toupper(arr1) - 'A'], arraySizes[toupper(arr1) - 'A'],
-                         arrays[arr2 - 'A'], &arraySizes[arr2 - 'A'], lb, rb);
+            copyElems(arrays[toupper(arr1) - 'A'], arraySizes[toupper(arr1) - 'A'], arrays[arr2 - 'A'],
+                      &arraySizes[arr2 - 'A'], lb, rb);
             printf("Elements copied from array %c to %c\n", arr1, arr2);
         } else if (sscanf(command, "sort %c+;", &arr1) == 1 && isalpha(arr1)) {
-            qsort(arrays[toupper(arr1) - 'A'], arraySizes[toupper(arr1) - 'A'], sizeof(int),
-                  compareAsc);
+            qsort(arrays[toupper(arr1) - 'A'], arraySizes[toupper(arr1) - 'A'], sizeof(int), compareAsc);
             // TODO: change output format
             printf("Array A sorted in ascending order\n");
         } else if (sscanf(command, "sort %c-;", &arr1) == 1 && isalpha(arr1)) {
-            qsort(arrays[toupper(arr1) - 'A'], arraySizes[toupper(arr1) - 'A'], sizeof(int),
-                  compareDesc);
+            qsort(arrays[toupper(arr1) - 'A'], arraySizes[toupper(arr1) - 'A'], sizeof(int), compareDesc);
             printf("Array A sorted in descending order\n");
         } else if (sscanf(command, "shuffle %c;", &arr1) == 1 && isalpha(arr1)) {
             shuffleArr(arrays[toupper(arr1) - 'A'], arraySizes[toupper(arr1) - 'A']);
@@ -142,6 +76,10 @@ int main() {
 
     return 0;
 }
+
+int compareAsc(const void* a, const void* b) { return (*(int*)a - *(int*)b); }
+int compareDesc(const void* a, const void* b) { return (*(int*)b - *(int*)a); }
+int compareShuffle() { return rand() % 3 - 1; }
 
 int concatArrs(int dest[], int* destSize, const int src[], int srcSize) {
     for (int i = 0; i < srcSize; i++) {
@@ -204,11 +142,12 @@ int loadArr(int array[], int* size, const char* filename) {
         return ERROR;
     }
 
-    int value;
-    *size = 0;
-    while (fscanf(file, "%d", &value) == 1 && *size < BUFSIZ) {
-        array[(*size)++] = value;
-    }
+    // FIXME: SKIP invalid strings in the input file
+    // int value;
+    // *size = 0;
+    // while (fscanf(file, "%s", &value) != EOF && *size < BUFSIZ) {
+    //     array[(*size)++] = value;
+    // }
 
     fclose(file);
 
