@@ -5,6 +5,30 @@
 #include "stack.h"
 #include "stack_double.h"
 
+enum status_codes { OK = 1, NO_MEMORY = -1, INVALID_INFIX = 2, UNBALANCED_BRACKETS = 3, EMPTY_FILE = 4 };
+
+void print_scs(int choice) {
+    switch (choice) {
+        case INVALID_INFIX:
+            printf("\nERROR: INVALID INFIX EXPRESSION\n");
+            break;
+        case OK:
+            printf("\nProject finished successfully!\n");
+            break;
+        case NO_MEMORY:
+            printf("\nERROR: NO MEMORY\n");
+            break;
+        case UNBALANCED_BRACKETS:
+            printf("\nERROR: UNBALANCED PARENTHESES\n");
+            break;
+        case EMPTY_FILE:
+            printf("\nNOTICE: EMPTY FILE\n");
+            break;
+        default:
+            break;
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc == 1) {
         printf("ERROR: TOO FEW ARGUMENTS");
@@ -22,37 +46,39 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        char *infix_expression = NULL;
-        int flag = 0, count = 1;
+        char *infix_expression;
+        int flag = 0, count = 1, status = 0;
         while ((count = input(fptr, &infix_expression))) {
-            if (!validateInfixExpression(infix_expression)) {
-                flag = 1;
-            }
-
-            char *postfix_expression = (char *)malloc((count + 1) * sizeof(char));
-            if (postfix_expression == NULL) {
-                printf("ERROR: NO MEMORY\n");
-                free(infix_expression);
-                exit(1);
-            }
-            postfix_expression[count] = '\0';
-
-            int div = 0;
-            if (flag == 0) {
-                infixToPostfix(infix_expression, postfix_expression);
-                printf("%s\n", infix_expression);
-                printf("%s\n", postfix_expression);
-                double res = evaluatePostfix(postfix_expression, &div);
-                if (div) {
-                    printf("ERROR: DIVISION BY 0\n");
-                } else {
-                    printf("~Result: %.3f\n", res);
+            if ((status = validateInfixExpression(infix_expression)) != 1) {  //
+                print_scs(status);
+            } else {
+                char *postfix_expression = (char *)malloc((count + 1) * sizeof(char));
+                if (postfix_expression == NULL) {
+                    printf("ERROR: NO MEMORY\n");
+                    free(infix_expression);
+                    exit(1);
                 }
-            }
+                postfix_expression[count] = '\0';
 
-            free(postfix_expression);
-            free(infix_expression);
-            // infix_expression = NULL;
+                int div = 0;
+                if (flag == 0) {
+                    infixToPostfix(infix_expression, postfix_expression);
+                    printf("%s\n", infix_expression);
+                    printf("%s\n", postfix_expression);
+                    double res = evaluatePostfix(postfix_expression, &div);
+                    if (div) {
+                        printf("ERROR: DIVISION BY 0\n");
+                    } else {
+                        printf("~Result: %.3f\n", res);
+                    }
+                }
+
+                free(postfix_expression);
+                free(infix_expression);
+            }
+        }
+        if (status == 0) {
+            print_scs(EMPTY_FILE);
         }
         fclose(fptr);
         i++;
@@ -67,25 +93,25 @@ int validateInfixExpression(char *infix) {
         if (isDigit(infix[i])) {
             if (isDigit(infix[i + 1]) ||
                 (!isOperator(infix[i + 1]) && infix[i + 1] != ')' && infix[i + 1] != '\0')) {
-                printf("ERROR: INCORRECT STATEMENT\n");
-                return 0;
+                return INVALID_INFIX;
             }
         } else if (isOperator(infix[i])) {
             if ((!isDigit(infix[i + 1]) && infix[i + 1] != '(') || infix[i + 1] == '\0') {
-                printf("ERROR: INCORRECT STATEMENT\n");
-                return 0;
+                return INVALID_INFIX;
             }
-        } else if (strchr("0123456789/+-*^()\n", infix[i]) == NULL && infix[i] != '%') {
-            printf("ERROR: INCORRECT STATEMENT\n");
-            return 0;
+        } else if (strchr("0123456789/+-*^()\n", infix[i]) == NULL) {
+            return INVALID_INFIX;
         }
         i++;
     }
-    if (!areParenthesesBalanced(infix)) {
-        printf("ERROR: UNBALANCED PARENTHESES\n");
-        return 0;
+    // printf("HEREEEE %d\n", i);
+    if (i == 0) {
+        return EMPTY_FILE;
     }
-    return 1;
+    if (!areParenthesesBalanced(infix)) {
+        return UNBALANCED_BRACKETS;
+    }
+    return OK;
 }
 
 int input(FILE *fptr, char **infix_expression) {
