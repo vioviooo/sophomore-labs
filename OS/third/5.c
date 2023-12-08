@@ -7,74 +7,62 @@
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
+#include <libgen.h>
 
-void printFileInfo(const char *filePath) {
+enum status_codes {
+    OK = -1,
+    DIR_NOT_OPEN = -2
+};
+
+typedef long long ll;
+
+void print_file_info(const char *filepath) {
     struct stat fileStat;
-
-    if (stat(filePath, &fileStat) == -1) {
+    if (stat(filepath, &fileStat) == -1) {
         perror("stat");
         return;
     }
 
-    if (S_ISREG(fileStat.st_mode))
-        printf("-");
-    else if (S_ISDIR(fileStat.st_mode))
-        printf("d");
-    else if (S_ISCHR(fileStat.st_mode))
-        printf("c");
-    else if (S_ISBLK(fileStat.st_mode))
-        printf("b");
-    else if (S_ISFIFO(fileStat.st_mode))
-        printf("f");
-    else if (S_ISLNK(fileStat.st_mode))
-        printf("l");
-    else if (S_ISSOCK(fileStat.st_mode))
-        printf("s");
-    else
-        printf("?");
-
-    printf("%c%c%c%c%c%c%c%c%c",
-           (fileStat.st_mode & S_IRUSR) ? 'r' : '-',
-           (fileStat.st_mode & S_IWUSR) ? 'w' : '-',
-           (fileStat.st_mode & S_IXUSR) ? 'x' : '-',
-           (fileStat.st_mode & S_IRGRP) ? 'r' : '-',
-           (fileStat.st_mode & S_IWGRP) ? 'w' : '-',
-           (fileStat.st_mode & S_IXGRP) ? 'x' : '-',
-           (fileStat.st_mode & S_IROTH) ? 'r' : '-',
-           (fileStat.st_mode & S_IWOTH) ? 'w' : '-',
-           (fileStat.st_mode & S_IXOTH) ? 'x' : '-');
-
-    printf(" %2ld", (long)fileStat.st_nlink);
-
     struct passwd *pwd = getpwuid(fileStat.st_uid);
     struct group *grp = getgrgid(fileStat.st_gid);
-    printf(" %s %s", (pwd != NULL) ? pwd->pw_name : "unknown", (grp != NULL) ? grp->gr_name : "unknown");
 
-    printf(" %5lld", (long long)fileStat.st_size);
+    if (pwd != NULL) {
+        printf("%s ", pwd->pw_name);
+    } else {
+        printf("unknown ");
+    }
 
-    char timeString[100];
-    strftime(timeString, sizeof(timeString), "%b %d %H:%M", localtime(&fileStat.st_mtime));
-    printf(" %s", timeString);
+    if (grp != NULL) {
+        printf("%s", grp->gr_name);
+    } else {
+        printf("unknown");
+    }
 
-    printf(" %s\n", filePath);
+    printf(" %5lld", (ll)fileStat.st_size);
+
+    char time_string[100];
+    strftime(time_string, sizeof(time_string), "%b %d %H:%M", localtime(&fileStat.st_mtime));
+    printf(" %s", time_string);
+
+    printf(" %s\n", basename((char *)filepath));
 }
 
-void listFilesInDirectory(const char *dirPath) {
+void ls(const char *dirPath) {
     DIR *dir = opendir(dirPath);
 
     if (dir == NULL) {
-        perror("opendir");
+        perror("dir");
         return;
     }
 
-    struct dirent *entry;
+    struct dirent *d;
 
-    while ((entry = readdir(dir)) != NULL) {
-        char filePath[256];
-        snprintf(filePath, sizeof(filePath), "%s/%s", dirPath, entry->d_name);
+    while ((d = readdir(dir)) != NULL) {
+        char filepath[256];
+        snprintf(filepath, sizeof(filepath), "%s/%s", dirPath, d->d_name);
 
-        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-            printFileInfo(filePath);
+        if (strcmp(d->d_name, ".") != 0 && strcmp(d->d_name, "..") != 0) {
+            print_file_info(filepath);
         }
     }
 
@@ -83,13 +71,13 @@ void listFilesInDirectory(const char *dirPath) {
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s directory1 [directory2 ...]\n", argv[0]);
+        printf("Usage: %s dir_1 dir_2 ... dir_n\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
     for (int i = 1; i < argc; i++) {
-        printf("Listing files in directory: %s\n", argv[i]);
-        listFilesInDirectory(argv[i]);
+        printf("Files in the %s directory:\n", argv[i]);
+        ls(argv[i]);
         printf("\n");
     }
 
