@@ -98,6 +98,7 @@ typedef struct UndoNode {
     int year;
     char gender;
     double salary;
+    struct Liver* prev_state;
     struct UndoNode *next;
 } UndoNode;
 
@@ -137,7 +138,7 @@ int find_liver(Liver *head) {
     while (curr != NULL) {
         if (strcmp(curr->name, name) == 0 && strcmp(curr->middle_name, mid) == 0 &&
             strcmp(curr->last_name, sur) == 0 && curr->day == d && curr->month == m && curr->year == y &&
-            curr->gender == gen && fabs(curr->salary - sal) < 1e-6) {  // TODO: eps
+            curr->gender == gen && fabs(curr->salary - sal) < 1e-6) {
             return 1;
         }
         curr = curr->next;
@@ -197,7 +198,7 @@ int add_undo_liver(Liver **head, Liver **prev_state, UndoNode* node) {
     return OK;
 }
 
-UndoNode *add_undo(UndoNode *undo_head, char action, const Liver *data) {
+UndoNode *add_undo(UndoNode *undo_head, char action, const Liver *data, Liver* prev) {
     UndoNode *new_undo = (UndoNode *)malloc(sizeof(UndoNode));
     if (new_undo == NULL) {
         // Handle memory allocation failure
@@ -214,6 +215,12 @@ UndoNode *add_undo(UndoNode *undo_head, char action, const Liver *data) {
     new_undo->gender = data->gender;
     new_undo->salary = data->salary;
     new_undo->next = undo_head;
+
+    if (prev != NULL) {
+        new_undo->prev_state = prev;
+    }
+
+    free(prev);
 
     return new_undo;
 }
@@ -242,7 +249,7 @@ int delete_liver(Liver **head, UndoNode **undo_head) {
             strcmp(current->last_name, sur) == 0 && current->year == y && current->day == d &&
             current->month == m && fabs(current->salary - sal) < 1e-6) {
                 
-            *undo_head = add_undo(*undo_head, DELETE, current);
+            *undo_head = add_undo(*undo_head, DELETE, current, NULL);
             (*undo_head)->cnt++; // ADD CNT!!!
 
             if (previous == NULL) {
@@ -261,46 +268,6 @@ int delete_liver(Liver **head, UndoNode **undo_head) {
     return 0;
 }
 
-int do_undo(UndoNode **undo_head, Liver **head) { /// TODO:
-    if (*undo_head == NULL || (*undo_head)->cnt == 0) {
-        return ZERO_UNDO;
-    }
-
-    printf("HEREEEEEE %d", (*undo_head)->cnt);
-
-    if (undo_head == NULL) {
-        return EMPTY;
-    }
-
-    UndoNode *last_undo = *undo_head;
-    *undo_head = (*undo_head)->next;
-
-    Liver *prev_state = NULL;
-    int status;
-    switch (last_undo->action) {
-        case ADD:
-            delete_undo_liver(head, last_undo);
-            break;
-        case DELETE:
-            prev_state = *head;
-            if ((status = add_undo_liver(head, &prev_state, last_undo)) != OK) {
-                print_scs(status);
-            }
-            break;
-        case CHANGE:
-            break;
-        default:
-            break;
-    }
-
-    if (*undo_head != NULL) {
-        (*undo_head)->cnt--;
-    }
-
-    free(last_undo);
-
-    return OK;
-}
 
 int add_liver(Liver **head, Liver **prev_state, UndoNode** undo_head) {
     char name[BUFSIZ];
@@ -330,7 +297,7 @@ int add_liver(Liver **head, Liver **prev_state, UndoNode** undo_head) {
     new_liver->gender = gen;
     new_liver->salary = sal;
 
-    *undo_head = add_undo(*undo_head, ADD, new_liver);
+    *undo_head = add_undo(*undo_head, ADD, new_liver, NULL);
     (*undo_head)->cnt++;
 
     new_liver->next = NULL;
@@ -408,7 +375,30 @@ void print_menu_change() {
     printf("Please, enter: ");
 }
 
-int change_liver(Liver **head, int *cnt_oper) {
+// !!! 
+int change_undo_liver(Liver **head, UndoNode* node, Liver* prev_node) {
+    Liver *current = *head;
+    while (current != NULL) {
+        if (strcmp(current->name, node->name) == 0 && strcmp(current->middle_name, node->middle_name) == 0 &&
+            strcmp(current->last_name, node->last_name) == 0 && current->year == node->year && current->day == node->day &&
+            current->month == node->month && fabs(current->salary - node->salary) < 1e-6) {
+            strcpy(current->name, prev_node->name);
+            strcpy(current->middle_name, prev_node->middle_name);
+            strcpy(current->last_name, prev_node->last_name);
+            current->day = prev_node->day;
+            current->month = prev_node->month;
+            current->year = prev_node->year;
+            current->gender = prev_node->gender;
+            current->salary = prev_node->salary;
+            break;
+        }
+        current = current->next;
+    }
+
+    return OK;
+}
+
+int change_liver(Liver **head, int *cnt_oper, UndoNode** undo_head) {
     char name[BUFSIZ];
     char sur[BUFSIZ];
     char mid[BUFSIZ];
@@ -438,7 +428,6 @@ int change_liver(Liver **head, int *cnt_oper) {
                 int choice;
                 scanf("%d", &choice);
                 printf("Please, enter the change: ");
-
                 switch (choice) {
                     case NAME:
                         scanf("%s", buf);
@@ -482,15 +471,66 @@ int change_liver(Liver **head, int *cnt_oper) {
                         print_scs(INVALID_INPUT);
                         break;
                 }
-                (*cnt_oper)++;
             }
+            
+            (*cnt_oper)++;
+
+            Liver* prev_liver = (Liver*)malloc(sizeof(Liver));
+
+            strcpy(prev_liver->name, name);
+            strcpy(prev_liver->middle_name, mid);
+            strcpy(prev_liver->last_name, sur);
+            prev_liver->day = d;
+            prev_liver->month = m;
+            prev_liver->year = y;
+            prev_liver->salary = sal;
+            prev_liver->gender = gen;
+
+            *undo_head = add_undo(*undo_head, CHANGE, current, prev_liver); // !!! 
+            (*undo_head)->cnt++;
 
             return 1;
         }
         current = current->next;
     }
-
+    
     return 0;
+}
+
+
+int do_undo(UndoNode **undo_head, Liver **head) {
+
+    if (undo_head == NULL || (*undo_head)->action == '-') {
+        return EMPTY;
+    }
+
+    UndoNode *last_undo = *undo_head;
+    *undo_head = (*undo_head)->next;
+
+    Liver *prev_state = NULL;
+    int status;
+    switch (last_undo->action) {
+        case ADD:
+            delete_undo_liver(head, last_undo);
+            break;
+        case DELETE:
+            prev_state = *head;
+            if ((status = add_undo_liver(head, &prev_state, last_undo)) != OK) {
+                print_scs(status);
+            }
+            break;
+        case CHANGE:
+            if ((status = change_undo_liver(head, last_undo, last_undo->prev_state)) != OK) {
+                print_scs(status);
+            }
+            break;
+        default:
+            break;
+    }
+
+    free(last_undo);
+
+    return OK;
 }
 
 void print_menu() {
@@ -503,6 +543,21 @@ void print_menu() {
     printf("6. Delete liver\n");         //
     printf("7. Change liver's info\n");  //
     printf("0. Exit\n");                 //
+}
+
+void free_undo_list(UndoNode *head) {
+    while (head != NULL) {
+        UndoNode *temp = head;
+        head = head->next;
+
+        // Free the dynamically allocated prev_state
+        if (temp->prev_state != NULL) {
+            free(temp->prev_state);
+        }
+
+        // Free the current UndoNode
+        free(temp);
+    }
 }
 
 ///////
@@ -527,11 +582,11 @@ int main(int argc, char *argv[]) {
 
     char filename[256];
     bool flag = true;
-    int choice = -1, cnt_oper = 0;
+    int choice = -1, cnt_oper = 0, cnt_undo = 0;
     while (flag) {
         print_menu();
         printf("Enter your choice: ");
-        printf("Here: %d\n", undo_head->cnt);
+        printf("Here: %d\n", cnt_oper);
 
         if (scanf("%d", &choice) != 1) {
             choice = -1;
@@ -582,12 +637,21 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 5:  // undo operations
-                // while (undo_head->cnt != 0) {
-                    if ((status = do_undo(&undo_head, &head)) != OK) {
-                        break;
-                        print_scs(status);
+                cnt_undo = cnt_oper / 2;
+                if (cnt_undo == 0) {
+                    print_scs(ZERO_UNDO);
+                } else {
+                    while (cnt_undo != 0) {
+                        if ((status = do_undo(&undo_head, &head)) != OK) {
+                            print_scs(status);
+                            break;
+                        } 
+                        else {
+                            cnt_undo--;
+                        }
                     }
-                // }
+                    cnt_oper = 0;
+                }
                 break;
             case 6:  // delete liver
                 if (head == NULL) {
@@ -606,7 +670,7 @@ int main(int argc, char *argv[]) {
                     print_scs(EMPTY);
                 } else {
                     printf("Please, enter liver's parameters: ");
-                    if ((status = change_liver(&head, &cnt_oper)) < 0) {
+                    if ((status = change_liver(&head, &cnt_oper, &undo_head)) < 0) {
                         print_scs(status);
                     } else {
                         printf("%s\n", (status == 1) ? "Changed." : "Liver not found.");
@@ -630,6 +694,8 @@ int main(int argc, char *argv[]) {
         head = head->next;
         free(tmp);
     }
+
+    free_undo_list(undo_head);
 
     return 0;
 }
