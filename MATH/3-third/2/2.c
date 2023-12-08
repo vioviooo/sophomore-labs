@@ -5,8 +5,7 @@
 #include "functions.c"
 
 int main(int argc, char *argv[]) {
-    
-    // change accordingly
+    // TODO: change accordingly
     int size = 3, vec_cnt = 3;
 
     double **matrix = (double **)malloc(size * sizeof(double *));

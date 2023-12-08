@@ -54,6 +54,9 @@ int find_norm(int count, Vector **max_norm, int *cnt, int *cnt_p, int *cnt_m, Ve
             *cnt = 0;
             free(*max_norm);
             *max_norm = (Vector *)malloc(10 * sizeof(Vector));
+            if (*max_norm == NULL) {
+                return NO_MEMORY;
+            }
             cur_max_norm = cur_norm;
             (*max_norm)[*cnt] = vector;
             (*cnt)++;
@@ -76,6 +79,9 @@ int find_norm(int count, Vector **max_norm, int *cnt, int *cnt_p, int *cnt_m, Ve
             *cnt_p = 0;
             free(*max_pow_norm);
             *max_pow_norm = (Vector *)malloc(10 * sizeof(Vector));
+            if (*max_pow_norm == NULL) {
+                return NO_MEMORY;
+            }
             cur_max_pow_norm = my_pow_norm;
             (*max_pow_norm)[*cnt_p] = vector;
             (*cnt_p)++;
@@ -99,6 +105,9 @@ int find_norm(int count, Vector **max_norm, int *cnt, int *cnt_p, int *cnt_m, Ve
                 *cnt_m = 0;
                 free(*max_matrix_norm);
                 *max_matrix_norm = (Vector *)malloc(10 * sizeof(Vector));
+                if (*max_matrix_norm == NULL) {
+                    return NO_MEMORY;
+                }
                 cur_max_matrix_norm = cur_matrix_norm;
                 (*max_matrix_norm)[*cnt_m] = vector;
                 (*cnt_m)++;
