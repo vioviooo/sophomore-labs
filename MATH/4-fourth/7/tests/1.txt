@@ -1,0 +1,6 @@
+var=15;
+new=var;
+var=12;
+print;
+all=var/12;
+print all;
