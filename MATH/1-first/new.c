@@ -147,7 +147,6 @@ enum status_codes is_valid_num(char* ptr, int base) {
 
 int to_decimal(int base, char* ptr) {
     int res = 0;
-    // char* ptr = num;
 
     while (*ptr) {
         res = res * base + (isdigit(*ptr) ? *ptr - '0' : to_upper(ptr) - 'A' + 10);

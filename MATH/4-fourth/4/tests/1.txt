@@ -1,0 +1,9 @@
+read(c,2);
+111
+read(b,2);
+1010
+a:=b&c;
+write(b,4);
+write(a,10);
+a:=\a;
+write(a,10);

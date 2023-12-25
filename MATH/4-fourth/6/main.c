@@ -52,6 +52,17 @@ Node *createNode(char data) {
     return newNode;
 }
 
+int add_node(Node* root, char data) {
+    Node* new_node = (Node*)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        return NO_MEMORY;
+    }
+    new_node->data = data;
+    new_node->left = new_node->right = NULL;
+    root = new_node;
+    return OK;
+}
+
 Node *copyTree(Node *original, char *values, int *index) {
     if (original == NULL) {
         return NULL;

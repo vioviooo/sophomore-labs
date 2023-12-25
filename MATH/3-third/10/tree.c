@@ -2,22 +2,32 @@
 
 struct Node {
     char data;
-    int childCount;
+    int child_cnt;
     struct Node** children; // there can be more than 2 children
 };
 
 struct Node* add_node(char data) {
     struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    if (newNode == NULL) {
+        return NULL;
+    }
     newNode->data = data;
-    newNode->childCount = 0;
+    newNode->child_cnt = 0;
     newNode->children = NULL;
     return newNode;
 }
 
 void add_child(struct Node* parent, struct Node* child) {
-    parent->children = realloc(parent->children, (parent->childCount + 1) * sizeof(struct Node*));
-    parent->children[parent->childCount] = child;
-    parent->childCount++;
+    struct Node** tmp = realloc(parent->children, (parent->child_cnt + 1) * sizeof(struct Node*));
+    if (tmp == NULL) {
+        free(parent->children);
+        parent->children = NULL;
+        return;
+    }
+
+    parent->children = tmp;
+    parent->children[parent->child_cnt] = child;
+    parent->child_cnt++;
 }
 
 void print_tree(struct Node* root, int level, FILE* fptr) {
@@ -27,7 +37,7 @@ void print_tree(struct Node* root, int level, FILE* fptr) {
         }
         fprintf(fptr, "|--%c\n", root->data);
 
-        for (int i = 0; i < root->childCount; i++) {
+        for (int i = 0; i < root->child_cnt; i++) {
             print_tree(root->children[i], level + 1, fptr);
         }
     }
@@ -35,7 +45,7 @@ void print_tree(struct Node* root, int level, FILE* fptr) {
 
 void free_tree(struct Node* root) {
     if (root != NULL) {
-        for (int i = 0; i < root->childCount; i++) {
+        for (int i = 0; i < root->child_cnt; i++) {
             free_tree(root->children[i]);
         }
         free(root->children);
@@ -48,7 +58,9 @@ struct Node* bracket_to_tree(char* sequence) {
     struct Node* node;
     struct Node* curr = root;
     struct Node** my_nodes = (struct Node**)malloc(strlen(sequence) * sizeof(struct Node*));
-    
+    if (*my_nodes == NULL) {
+        return NULL;
+    }
     int cnt_node = 0, len = strlen(sequence);
     for (int i = 0; i < len; i++) {
         if (sequence[i] == '(') {
@@ -67,7 +79,6 @@ struct Node* bracket_to_tree(char* sequence) {
         }
     }
 
-    // free memory!
     free(my_nodes);
     
     return root;

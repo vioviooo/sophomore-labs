@@ -1,0 +1,6 @@
+line = 1, % sugar and spice
+line = 2, % k.o.
+line = 6, ERROR: INVALID INFIX EXPRESSION
+line = 8, % comment2
+line = 9, ERROR: INVALID BASE
+line = 11, % hi

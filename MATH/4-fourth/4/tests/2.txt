@@ -1,0 +1,19 @@
+read(c,10); % sugar and spice
+10  % k.o.
+read(b,10);
+9 %
+a:=b&c; % happy new year!
+a:=b&&c;
+a:=~a;
+write(b,2);  % comment2
+write(c,0); % another comment
+write(a,10); this text shouldn't be here
+write(a,10); % this text shoult be there
+write(a,4); cringe % comment
+% hi
+cringe
+{very
+cringe
+comment}
+% ffdksjfdlkjsf
+p=4;

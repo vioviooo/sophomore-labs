@@ -12,15 +12,25 @@
 #include <stdarg.h>
 #include <complex.h>
 
-enum status_codes {
-    OK = 1,
-    ERROR = -2,
-    INVALID_INPUT = 2,
-    NO_MEMORY = -1,
-    OVERFLOW_ = -3,
-    UNDEFINED = -4
-};
+#define HASHSIZE 128
+#define MAX_LINE_LEN 200
+#define MAX_WORD_LEN 200
 
+typedef struct Macro {
+    char *name;
+    char *value;
+    struct Macro *next;
+} Macro;
 
+typedef struct HashMap {
+    int capacity;
+    int size;
+    struct Macro *table[HASHSIZE];
+} HashMap;
+
+int hash_function(struct HashMap* mp, char* key);
+int insert_word(struct HashMap* mp, char* name, char* value);
+int rehash(struct HashMap* mp);
+void free_hashmap(struct HashMap* mp);
 
 #endif

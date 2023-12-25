@@ -12,17 +12,6 @@
 #include "header.h"
 #include "interaction.c"
 
-// enum status_codes {
-//     OKAY = 1,
-//     ERROR = -2,
-//     INVALID_INPUT = 2,
-//     INVALID_INPUT_FILE = -6,
-//     NO_MEMORY = -1,
-//     OVERFLOW_ = -3,
-//     UNDEFINED = -4,
-//     FILE_NOT_OPEN = -5
-// };
-
 void print_scs(int choice) {
     switch(choice) {
         case INVALID_INPUT:
